@@ -10,9 +10,14 @@ class MusicList:
     """歌单"""
 
     def __init__(self):
+        # 歌单名
         self.__name = ""
-        self.__musics = []
+        # 创建日期(字符串, 形如: "2018-12-12")
+        self.__date = ""
+        # 播放次数
         self.__play_count = 0
+        # 歌单音乐
+        self.__musics = []
 
     def get_name(self):
         return self.__name
@@ -31,6 +36,12 @@ class MusicList:
 
     def set_play_count(self, count):
         self.__play_count = count
+
+    def get_date(self):
+        return self.__date
+
+    def set_date(self, date_str):
+        self.__date = date_str
 
     def get_by_name(self):
         pass
@@ -84,7 +95,7 @@ class MusicList:
         ml = MusicList.__encode(ml)
 
         ret = "{"
-        ret += '"name": "%s", "size":%d,"play_count":%d,' % (ml.get_name(), ml.size(), ml.get_play_count())
+        ret += '"name": "%s", "size": %d, "play_count": %d, "date": "%s", ' % (ml.get_name(), ml.size(), ml.get_play_count(), ml.get_date())
         ret += '"musics":['
         for i in range(ml.size()):
             music = ml.get(i)
@@ -131,7 +142,8 @@ class MusicList:
 
         music_list = MusicList()
         music_list.set_name(json_str["name"].replace('&#34;', '"'))
-        music_list.set_play_count((json_str["play_count"]))
+        music_list.set_play_count(json_str["play_count"])
+        music_list.set_date(json_str["date"])
         m_list = json_str["musics"]
         for i in range(len(m_list)):
             m = Music()

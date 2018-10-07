@@ -197,11 +197,12 @@ class MyWindow(QWidget, Ui_Form):
     # 将歌单中的歌曲列表加载到 table widget
     # 需先设置列数
     def show_musics_data(self):
+        self.music_list_name.setText(self.cur_music_list.get_name())
+        self.music_list_date.setText("%s创建" % self.cur_music_list.get_date())
         self.music_count.setText("<p>歌曲数</p><p style='text-align: right'>%d</p>" % self.cur_music_list.size())
         self.music_list_play_count.setText(
             "<p>播放数</p><p style='text-align: right'>%d</p>" % self.cur_music_list.get_play_count())
 
-        self.music_list_name.setText(self.cur_music_list.get_name())
         self.musics.clearContents()
         self.musics.setRowCount(self.cur_music_list.size())
         musics__ = self.cur_music_list
@@ -551,6 +552,7 @@ class MyWindow(QWidget, Ui_Form):
         mln_font.setPointSize(20)
         self.music_list_name.setFont(mln_font)
         self.music_list_name.setText(self.cur_music_list.get_name())
+        self.music_list_date.setText("%s创建" % self.cur_music_list.get_date())
         self.music_count.setStyleSheet("color:#999999")
         self.music_list_play_count.setStyleSheet("color:#999999")
         # self.line.setStyleSheet("background-color:#999999;border:10px")

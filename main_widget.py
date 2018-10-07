@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\13595\PycharmProjects\hello\qt\example\music\main_widget.ui'
+# Form implementation generated from reading ui file 'C:\Users\13595\PycharmProjects\music-player\main_widget.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.2
 #
@@ -189,12 +189,12 @@ class Ui_Form(object):
         self.music_list_name.setFont(font)
         self.music_list_name.setObjectName("music_list_name")
         self.gridLayout_5.addWidget(self.music_list_name, 0, 2, 1, 1)
-        self.label_3 = QtWidgets.QLabel(self.widget_2)
+        self.music_list_date = QtWidgets.QLabel(self.widget_2)
         font = QtGui.QFont()
         font.setPointSize(8)
-        self.label_3.setFont(font)
-        self.label_3.setObjectName("label_3")
-        self.gridLayout_5.addWidget(self.label_3, 1, 2, 1, 1)
+        self.music_list_date.setFont(font)
+        self.music_list_date.setObjectName("music_list_date")
+        self.gridLayout_5.addWidget(self.music_list_date, 1, 2, 1, 1)
         self.gridLayout_6.addLayout(self.gridLayout_5, 0, 0, 1, 3)
         spacerItem7 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout_6.addItem(spacerItem7, 1, 1, 1, 1)
@@ -563,7 +563,7 @@ class Ui_Form(object):
         self.music_list_play_count.setText(_translate("Form", "播放数\n"
 "78"))
         self.music_list_name.setText(_translate("Form", "TextLabel"))
-        self.label_3.setText(_translate("Form", "2018-12-12创建"))
+        self.music_list_date.setText(_translate("Form", "2018-12-12创建"))
         self.label_4.setText(_translate("Form", "歌曲列表"))
         self.label.setText(_translate("Form", "本地音乐"))
         self.label_2.setText(_translate("Form", "300首音乐"))
