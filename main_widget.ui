@@ -303,6 +303,12 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>宋体</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="autoScrollMargin">
           <number>16</number>
          </property>

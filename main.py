@@ -98,6 +98,7 @@ class MyWindow(QWidget, Ui_Form):
             item.setText(music_list)
             self.navigation.addItem(item)
 
+        # 设置垂直滚动条样式
         # 启动时默认选中第一个歌单
         self.navigation.setCurrentRow(2)
         path = glo_var.music_list_path
@@ -108,9 +109,10 @@ class MyWindow(QWidget, Ui_Form):
         self.musics.setColumnCount(5)
         # 将歌单中的歌曲列表加载到 table widget
         self.show_musics_data()
-        self.cur_play_list = MusicList.to_play_list(self.cur_music_list)
-        self.cur_play_list.set_current_index(0)
-        self.cur_play_list.current_music_change.connect(self.on_cur_play_list_change)
+        if self.cur_play_list is None:
+            self.cur_play_list = MusicList.to_play_list(self.cur_music_list)
+            self.cur_play_list.set_current_index(0)
+            self.cur_play_list.current_music_change.connect(self.on_cur_play_list_change)
 
     def init_table_widget_ui(self):
         # --------------------- 1. 歌单音乐列表UI --------------------- #
@@ -130,10 +132,10 @@ class MyWindow(QWidget, Ui_Form):
         self.musics.setFocusPolicy(Qt.NoFocus)  # 去除选中虚线框
         self.musics.setMouseTracking(True)
         # 设置垂直滚动条样式
-        self.musics.verticalScrollBar().setStyleSheet("QScrollBar{background:#fafafa; width: 10px;}"
-                                                      "QScrollBar::handle{background:#e1e1e2; border:2px solid transparent; border-radius:5px;}"
+        self.musics.verticalScrollBar().setStyleSheet("QScrollBar{background:#fafafa; width: 8px;}"
+                                                      "QScrollBar::handle{background:#e1e1e2; border-radius:4px;}"
                                                       "QScrollBar::handle:hover{background:#cfcfd1;}"
-                                                      "QScrollBar::sub-line{background:transparent;}"
+                                                      "QScrollBar::sub-line{none;}"
                                                       "QScrollBar::add-line{background:transparent;}")
         self.musics.setStyleSheet("QTableWidget{border:none}" +
                                   "QTableWidget::item::selected{background:#e3e3e5}")
@@ -572,6 +574,7 @@ class MyWindow(QWidget, Ui_Form):
         self.main_stacked_widget.setStyleSheet("border-bottom: 1px solid #E1E1E2")
 
         # ------------------ 左边导航栏 ------------------ #
+        self.navigation.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.navigation.setStyleSheet(
             "QListWidget{outline:0px; color:#5c5c5c; background:#f5f5f7;border-top:none;border-left:none; "
             "border-right:1px solid #e1e1e2;border-bottom:1px solid #e1e1e2}"
@@ -579,6 +582,13 @@ class MyWindow(QWidget, Ui_Form):
             "QListWidget::Item:hover{color:#000000;background:transparent;border:0px solid gray;}"
             "QListWidget::Item:selected{color:#000000;border:0px solid gray;}"
             "QListWidget::Item:selected:active{background:#e6e7ea;color:#000000;border-left: 3px solid #c62f2f;}")
+        self.navigation.verticalScrollBar().setStyleSheet("QScrollBar{background:#fafafa; width: 8px;}"
+                                                          "QScrollBar::handle{background:#e1e1e2;border-radius:4px;}"
+                                                          "QScrollBar::handle:hover{background:#cfcfd1;}"
+                                                          "QScrollBar::sub-line{background:transparent;}"
+                                                          "QScrollBar::add-line{background:transparent;}"
+                                                          "QScrollBar::add-page{background:#f5f5f7;}"
+                                                          "QScrollBar::sub-page{background:#f5f5f7;}")
         self.navigation.setCursor(Qt.PointingHandCursor)
         self.slider_progress.setCursor(Qt.PointingHandCursor)
         # 更改右键策略
@@ -643,7 +653,6 @@ class MyWindow(QWidget, Ui_Form):
             "QPushButton{border-image:url(./resource/image/取消全屏.png);border-radius:5px;border-color:#dadadb}" +
             "QPushButton:hover{border-image:url(./resource/image/取消全屏2.png)}")
         self.btn_return.setCursor(Qt.PointingHandCursor)
-        # max: 0
         s = "<p>1</p><p>2</p><p>3</p><p>4</p><p>5</p><p>6</p><p>7</p><p>8</p><p>9</p><p>10</p><p>11</p>" \
             "<p>12</p><p>13</p><p>14</p><p>15</p>" \
             "<p>16</p><p>17</p><p>18</p>" \
@@ -675,8 +684,11 @@ class MyWindow(QWidget, Ui_Form):
         self.le_search_local_music.addAction(self.search_act_2, QLineEdit.TrailingPosition)
 
     def show_play_list(self):
-        self.play_list_page.show()
-        self.play_list_page.show_data(self.cur_play_list)
+        if self.play_list_page.isHidden():
+            self.play_list_page.show()
+            self.play_list_page.show_data(self.cur_play_list)
+        else:
+            self.play_list_page.hide()
 
     def show_add_music_list_page(self):
         self.add_music_list_dialog.lineEdit.clear()

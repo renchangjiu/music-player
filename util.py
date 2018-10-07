@@ -1,5 +1,7 @@
 import os
 
+from PyQt5.QtGui import QFontMetrics
+
 import global_variable as gv
 from music_list import MusicList
 
@@ -43,12 +45,6 @@ def get_music_lists():
     return music_lists
 
 
-def test_4_get_music_lists():
-    lists = get_music_lists()
-    for music_list in lists:
-        print(music_list)
-
-
 # 把字符串中的特殊字符转义
 def encode(str_=""):
     return str_.replace('"', "&#34;").replace('\\', "&#92;")
@@ -61,6 +57,25 @@ def decode(str_=""):
 
 def search_local_music():
     pass
+
+
+def get_elided_text(QFont_, str_, max_width):
+    fm = QFontMetrics(QFont_)
+    # 计算字符串宽度
+    w = fm.width(str_)
+    # 当字符串宽度大于最大宽度时进行转换
+    if w < max_width:
+        return str_
+    else:
+        return __sub(str_, max_width, fm)
+
+
+def __sub(s, max_width, fm):
+    w = fm.width(s)
+    if w < max_width:
+        return s + "..."
+    else:
+        return __sub(s[0:-1], max_width, fm)
 
 
 if __name__ == "__main__":

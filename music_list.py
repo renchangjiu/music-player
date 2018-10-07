@@ -1,5 +1,5 @@
-import json, base64
-import os
+import json, os
+from datetime import datetime
 
 import global_variable as glo_var
 from MP3Parser import MP3
@@ -95,6 +95,10 @@ class MusicList:
             return False
         ml = MusicList.__encode(ml)
 
+        # 如果是创建歌单
+        if ml.get_date() == "" or ml.get_date() is None:
+            date = datetime.now().strftime("%F")
+            ml.set_date(date)
         ret = "{"
         ret += '"name": "%s", "size": %d, "play_count": %d, "date": "%s", ' % (ml.get_name(), ml.size(), ml.get_play_count(), ml.get_date())
         ret += '"musics":['
