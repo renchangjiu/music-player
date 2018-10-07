@@ -136,11 +136,12 @@ class MyWindow(QWidget, Ui_Form):
                                                       "QScrollBar::add-line{background:transparent;}")
         self.musics.setStyleSheet("QTableWidget{border:none}" +
                                   "QTableWidget::item::selected{background:#e3e3e5}")
-        # 设置表头背景色
-        # self.musics.horizontalHeader().setStyleSheet("QHeaderView::section:hover{background:#ebeced;" +
-        #                                                 "border:none""}")
+        # 设置表头
         self.musics.horizontalHeader().setStyleSheet(
-            "color:#666666; border-top:1px solid #c62f2f;")
+            """QHeaderView::section{background:#fafafa;border:none;border-right:1px solid #e1e1e2}
+            QHeaderView::section:hover{background:#ebeced;border:none}
+            QHeaderView{color:#666666; border-top:1px solid #c62f2f;}
+            """)
 
         # 隐藏横向滚动条
         self.musics.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -166,11 +167,12 @@ class MyWindow(QWidget, Ui_Form):
                                                               "QScrollBar::add-line{background:transparent;}")
         self.tb_local_music.setStyleSheet("QTableWidget{border:none}" +
                                           "QTableWidget::item::selected{background:#e3e3e5}")
-        # 设置表头背景色
-        # self.musics.horizontalHeader().setStyleSheet("QHeaderView::section:hover{background:#ebeced;" +
-        #                                                 "border:none""}")
+        # 设置表头
         self.tb_local_music.horizontalHeader().setStyleSheet(
-            "color:#666666; border-top:1px solid #e1e1e2;")
+            """QHeaderView::section{background:#fafafa;border:none;border-right:1px solid #e1e1e2}
+            QHeaderView::section:hover{background:#ebeced;border:none}
+            QHeaderView{color:#666666; border-top:1px solid #c62f2f;}
+            """)
         self.tb_local_music.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.tb_local_music.setContextMenuPolicy(Qt.CustomContextMenu)
 
@@ -551,8 +553,8 @@ class MyWindow(QWidget, Ui_Form):
         mln_font = QFont()
         mln_font.setPointSize(20)
         self.music_list_name.setFont(mln_font)
-        self.music_list_name.setText(self.cur_music_list.get_name())
-        self.music_list_date.setText("%s创建" % self.cur_music_list.get_date())
+        # self.music_list_name.setText(self.cur_music_list.get_name())
+        # self.music_list_date.setText("%s创建" % self.cur_music_list.get_date())
         self.music_count.setStyleSheet("color:#999999")
         self.music_list_play_count.setStyleSheet("color:#999999")
         # self.line.setStyleSheet("background-color:#999999;border:10px")
