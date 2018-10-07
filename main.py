@@ -879,19 +879,17 @@ class MyWindow(QWidget, Ui_Form):
     def on_lm_act1_play(self, rows):
         # 1. 选中的音乐依次在current index后加入播放列表
         # 2. 播放第一个选中的音乐
-        print(rows)
+        # print(rows)
         cur_index = self.cur_play_list.get_current_index()
-        print(self.cur_play_list)
+        # print(self.cur_play_list)
         for row in rows:
             music = self.cur_local_music_list.get(row)
-            print(music)
+            # print(music)
             cur_index += 1
             self.cur_play_list.insert_music(cur_index, music)
-        print(self.cur_play_list)
+        # print(self.cur_play_list)
         self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
-        print(1)
         self.cur_play_list.set_current_index(self.cur_play_list.get_current_index() + 1)
-        print(2)
         self.stop_current()
         self.play()
         self.btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/暂停.png)}" +
@@ -970,7 +968,7 @@ class MyWindow(QWidget, Ui_Form):
             self.show_musics_data()
             # print("equal   ",
             #       self.cur_play_list.get_current_music().get_from().get_name() == self.cur_music_list.get_name())
-            print(self.cur_play_list.get_current_music())
+            # print(self.cur_play_list.get_current_music())
             if self.cur_play_list.get_current_music() is not None:
                 if self.cur_play_list.get_current_music().get_from().get_name() == self.cur_music_list.get_name():
                     playing_row = self.cur_music_list.index_of(self.cur_play_list.get_current_music())

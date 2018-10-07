@@ -116,7 +116,6 @@ class PlayListPage(QWidget, Ui_Form):
                     if self.tableWidget.item(i, j) is not None:
                         self.tableWidget.item(i, j).setBackground(b2)
 
-        print(self.tabWidget.tabBar().height())
 
     def paintEvent(self, QPaintEvent):
         # 画出边框线
