@@ -6,6 +6,7 @@ from PyQt5.QtGui import QPixmap, QBrush, QFont, QColor, QIcon, QImage, QFontMetr
 from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QAbstractItemView, QListWidgetItem, QTableWidgetItem, \
     QAction, QMenu, QLabel
 
+import global_variable as glo_var
 from LRCParser import LRC
 from MP3Parser import MP3
 from main_widget import Ui_Form
@@ -88,8 +89,7 @@ class MyWindow(QWidget, Ui_Form):
         item1.setFlags(Qt.NoItemFlags)
         self.navigation.addItem(item1)
 
-        path = "./resource/config/"
-        music_lists = os.listdir(path)
+        music_lists = os.listdir(glo_var.music_list_path)
         music_list_icon = QIcon("./resource/image/歌单.png")
         for music_list in music_lists:
             item = QListWidgetItem()
@@ -100,6 +100,7 @@ class MyWindow(QWidget, Ui_Form):
 
         # 启动时默认选中第一个歌单
         self.navigation.setCurrentRow(2)
+        path = glo_var.music_list_path
         text = self.navigation.currentItem().text()
         self.cur_music_list = MusicList.from_disk(path + text)
         self.cur_whole_music_list = MusicList.from_disk(path + text)
@@ -185,8 +186,7 @@ class MyWindow(QWidget, Ui_Form):
         if text == "创建的歌单":
             return
         self.stackedWidget_2.setCurrentWidget(self.music_list_detail)
-        path = "./resource/config/"
-        music_list_path = path + text
+        music_list_path = glo_var.music_list_path + text
         self.cur_music_list = MusicList.from_disk(music_list_path)
         self.cur_whole_music_list = MusicList.from_disk(music_list_path)
         # 在 tableWidget中显示歌曲列表
@@ -599,7 +599,8 @@ class MyWindow(QWidget, Ui_Form):
         self.btn_zoom.setCursor(Qt.SizeFDiagCursor)
 
         # ------------------ 左下音乐名片模块 ------------------ #
-        self.music_info_widget.setStyleSheet("background-color:#f5f5f7;border:none")
+        self.music_info_widget.setStyleSheet(
+            "QWidget#music_info_widget{background-color:#f5f5f7;border:none;border-right:1px solid #e1e1e2;}")
         self.music_info_widget.setCursor(Qt.PointingHandCursor)
         self.btn_music_image.setIconSize(QSize(44, 44))
         self.btn_music_image.setAutoFillBackground(True)
@@ -701,15 +702,21 @@ class MyWindow(QWidget, Ui_Form):
         item = self.navigation.itemAt(pos)
         if item is not None and item.text() != "创建的歌单":
             self.menu = QMenu()
-            act1 = QAction("播放(Enter)", self)
-            act1.setIcon(QIcon("./resource/image/nav-播放.png"))
+            act1 = QAction("播放(Enter)", self.menu)
+            act2 = QAction("导出歌单", self.menu)
+            act3 = QAction("编辑歌单信息(E)", self.menu)
+            act4 = QAction("删除歌单(Delete)", self.menu)
 
-            act2 = QAction("删除歌单(Delete)", self)
-            act2.setIcon(QIcon("./resource/image/nav-删除.png"))
-            act2.triggered.connect(lambda: self.del_music_list(item.text()))
+            act1.setIcon(QIcon("./resource/image/nav-播放.png"))
+            act4.setIcon(QIcon("./resource/image/nav-删除.png"))
+
+            act4.triggered.connect(lambda: self.del_music_list(item.text()))
+
             self.menu.addAction(act1)
-            self.menu.addSeparator()
             self.menu.addAction(act2)
+            self.menu.addSeparator()
+            self.menu.addAction(act3)
+            self.menu.addAction(act4)
             self.menu.exec(QCursor.pos())
 
     def on_musics_right_click(self, pos):
@@ -825,7 +832,7 @@ class MyWindow(QWidget, Ui_Form):
         # 1. 在目标歌单的末尾加入; 2. 已存在的音乐则不加入(根据path判断)
         sender = self.sender()
         music_list_name = sender.text()
-        target_music_list = MusicList.from_disk("./resource/config/%s" % music_list_name)
+        target_music_list = MusicList.from_disk("%s%s" % (glo_var.music_list_path, music_list_name))
         is_all_in = True
         for row in rows:
             if self.stackedWidget_2.currentWidget() == self.music_list_detail:
@@ -938,7 +945,7 @@ class MyWindow(QWidget, Ui_Form):
             self.tb_local_music.clearSelection()
 
     def del_music_list(self, music_list_name):
-        path = "./resource/config/%s" % music_list_name
+        path = "%s%s" % (glo_var.music_list_path, music_list_name)
         MusicList.remove_from_disk(path)
         self.navigation.clear()
         self.init_data()
@@ -949,9 +956,8 @@ class MyWindow(QWidget, Ui_Form):
             if len(text) != 0:
                 self.cur_music_list = self.cur_whole_music_list.search(text)
             else:
-                path = "./resource/config/"
                 text = self.navigation.currentItem().text()
-                self.cur_music_list = MusicList.from_disk(path + text)
+                self.cur_music_list = MusicList.from_disk(glo_var.music_list_path + text)
             # self.show_musics_data()
             self.show_icon_item()
         elif self.stackedWidget_2.currentWidget() == self.local_music_page:

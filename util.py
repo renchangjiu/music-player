@@ -1,8 +1,10 @@
-# 把秒级时间格式化为mm:ss形式, second: str
 import os
+
+import global_variable as gv
 from music_list import MusicList
 
 
+# 把秒级时间格式化为mm:ss形式, second: str
 def format_time(second):
     second = int(float(second))
     min = "00"
@@ -35,10 +37,9 @@ def format_size(size):
 # 读取创建的歌单
 def get_music_lists():
     music_lists = []
-    path = "./resource/config/"
-    names = os.listdir(path)
+    names = os.listdir(gv.music_list_path)
     for name in names:
-        music_lists.append(MusicList.from_disk(path + name))
+        music_lists.append(MusicList.from_disk(gv.music_list_path + name))
     return music_lists
 
 

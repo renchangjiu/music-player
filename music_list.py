@@ -1,6 +1,7 @@
 import json, base64
 import os
 
+import global_variable as glo_var
 from MP3Parser import MP3
 from music import Music
 from play_list import PlayList
@@ -105,7 +106,7 @@ class MusicList:
         if ml.size() > 0:
             ret = ret[0:-1]
         ret += "]}"
-        f = open(r"./resource/config/%s" % ml.get_name(), "w", encoding="utf-8")
+        f = open(r"%s%s" % (glo_var.music_list_path, ml.get_name()), "w", encoding="utf-8")
         f.write(ret)
         f.close()
         return True
@@ -194,10 +195,8 @@ def test_4_to_disk():
 
 
 def test_4_from_disk():
-    # music_list = MusicList.from_json("./resource/config/kjj.json")
-    music_list = MusicList.from_disk("./resource/config/全部音乐")
-    print(music_list)
-
+    # print(music_list)
+    pass
 
 def add_all_loacl_music():
     path = r"D:/13595/Music/"
@@ -223,15 +222,4 @@ def add_all_loacl_music():
 
 
 if __name__ == "__main__":
-    # test1()
-    # test_4_to_json()
-    # test_4_from_disk()
-    # test_4_all()
-    # add_all_loacl_music()
-    # f = open("./resource/config/全部音乐", encoding="utf-8")
-    # print(json.loads(f.read(), encoding="utf-8"))
-    # f.close()
-    # test_4_remove_from_disk()
-    # test_4_remove()
-    # test_4_contains()
     pass
