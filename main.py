@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, QTimer, QProcess, QEvent, QSize, QPointF
 from PyQt5.QtGui import QPixmap, QBrush, QFont, QColor, QIcon, QImage, QFontMetrics, QCursor, QLinearGradient, \
     QGradient, QPainter
 from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QAbstractItemView, QListWidgetItem, QTableWidgetItem, \
-    QAction, QMenu, QLabel
+    QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout
 
 import global_variable as glo_var
 from LRCParser import LRC
@@ -15,12 +15,11 @@ from ui import add_music_list
 import util
 import ui.test
 from search_local_music import SearchLocalMusic
-from menu import Menu
 
+# TODO 右键菜单
 # TODO 本地音乐(未完成:)
 # TODO 自动滚动到当前播放音乐所在行: verticalScrollBar.setValue()
 # TODO 歌单音乐列表的右键菜单 (未完成: UI)
-# TODO ACTION 移入移出(1.重载类, 2. 判断鼠标位置)
 # TODO UI细节调整
 # todo 本地音乐或可与歌单音乐代码合并
 # todo 歌单图片 & 显示播放数
@@ -68,6 +67,7 @@ class MyWindow(QWidget, Ui_Form):
         self.cur_whole_local_music_list = None
 
         self.setupUi(self)
+        self.init_menu()
         self.init_data()
         self.init_table_widget_ui()
         self.init_ui()
@@ -516,7 +516,7 @@ class MyWindow(QWidget, Ui_Form):
         print(self.scrollArea.verticalScrollBar().sliderPosition())
         # print("value: " + str(self.scrollArea.verticalScrollBar().value()))
 
-    def paintEvent(self, _QPaintEvent):
+    def paintEvent(self, QPaintEvent_):
         self.btn_zoom.setGeometry(self.width() - 18, self.height() - 18, 14, 14)
         self.set_tb_local_music_layout()
         if self.cur_music_list is not None:
@@ -683,6 +683,32 @@ class MyWindow(QWidget, Ui_Form):
         self.search_act_2.setIcon(QIcon("./resource/image/搜索3.png"))
         self.le_search_local_music.addAction(self.search_act_2, QLineEdit.TrailingPosition)
 
+    def init_menu(self):
+        # 导航栏右键菜单
+        self.nav_menu = QMenu()
+
+        # 在音乐列表上右键的菜单
+        self.musics_menu = QMenu()
+
+        # 鼠标移到收藏到歌单时的菜单
+        self.collect_menu = QMenu()
+
+        self.nav_menu.setStyleSheet(
+            "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
+            "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
+            "QMenu::item:selected {background-color:#ededef;}" +
+            "QMenu::separator{background-color:#ededef;height:1px}")
+        self.musics_menu.setStyleSheet(
+            "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
+            "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
+            "QMenu::item:selected {background-color:#ededef;}" +
+            "QMenu::separator{background-color:#ededef;height:1px}")
+        self.collect_menu.setStyleSheet(
+            "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
+            "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
+            "QMenu::item:selected {background-color:#ededef;}" +
+            "QMenu::separator{background-color:#ededef;height:1px}")
+
     def show_play_list(self):
         if self.play_list_page.isHidden():
             self.play_list_page.show()
@@ -713,44 +739,61 @@ class MyWindow(QWidget, Ui_Form):
     def on_nav_right_click(self, pos):
         item = self.navigation.itemAt(pos)
         if item is not None and item.text() != "创建的歌单":
-            self.menu = QMenu()
-            act1 = QAction("播放(Enter)", self.menu)
-            act2 = QAction("导出歌单", self.menu)
-            act3 = QAction("编辑歌单信息(E)", self.menu)
-            act4 = QAction("删除歌单(Delete)", self.menu)
-
-            act1.setIcon(QIcon("./resource/image/nav-播放.png"))
-            act4.setIcon(QIcon("./resource/image/nav-删除.png"))
-
+            self.nav_menu.clear()
+            act1 = self.create_widget_action("./resource/image/nav-播放.png", "播放(Enter)")
+            act2 = self.create_widget_action("./resource/image/导出.png", "导出歌单")
+            act3 = self.create_widget_action("./resource/image/编辑.png", "编辑歌单信息(E)")
+            act4 = self.create_widget_action("./resource/image/删除.png", "删除歌单(Delete)")
             act4.triggered.connect(lambda: self.del_music_list(item.text()))
 
-            self.menu.addAction(act1)
-            self.menu.addAction(act2)
-            self.menu.addSeparator()
-            self.menu.addAction(act3)
-            self.menu.addAction(act4)
-            self.menu.exec(QCursor.pos())
+            self.nav_menu.addAction(act1)
+            self.nav_menu.addAction(act2)
+            self.nav_menu.addSeparator()
+            self.nav_menu.addAction(act3)
+            self.nav_menu.addAction(act4)
+            self.nav_menu.exec(QCursor.pos())
+
+    def create_widget_action(self, icon, text):
+        act = QWidgetAction(self)
+        widget = QWidget(self)
+        layout = QHBoxLayout()
+        layout.setContentsMargins(13, -1, -1, 11)
+        layout.setSpacing(13)
+        lb_icon = QLabel(widget)
+        lb_icon.resize(18, 18)
+        lb_text = QLabel(text, widget)
+        if icon != "":
+            lb_icon.setPixmap(QPixmap(icon))
+        widget.setStyleSheet("QWidget:hover{background:#ededef}")
+        layout.addWidget(lb_icon)
+        layout.addWidget(lb_text)
+        layout.addStretch()
+        widget.setLayout(layout)
+        act.setDefaultWidget(widget)
+        return act
 
     def on_musics_right_click(self, pos):
-        self.musics_menu = Menu()
-        act1 = QAction("播放(Enter)", self)
-        # act1.setIcon(QIcon("./resource/image/nav-播放.png"))
-
-        act2 = QAction("下一首播放", self)
-        # act2.setIcon(QIcon("./resource/image/nav-删除.png"))
+        self.musics_menu.clear()
+        act1 = self.create_widget_action("./resource/image/nav-播放.png", "播放(Enter)")
+        act2 = self.create_widget_action("./resource/image/nav-下一首播放.png", "下一首播放(Enter)")
         act3 = QAction("收藏到歌单(Ctrl+S)", self)
-        act4 = QAction("打开文件所在目录", self)
-        act5 = QAction("从歌单中删除(Delete)", self)
+        act4 = self.create_widget_action("./resource/image/打开文件.png", "打开文件所在目录")
+        act5 = self.create_widget_action("./resource/image/删除.png", "从歌单中删除(Delete)")
 
+        self.musics_menu.addAction(act1)
+        self.musics_menu.addAction(act2)
+        self.musics_menu.addAction(act3)
         # 获取被选中的行, 包括列
         items = self.musics.selectedItems()
         # 被选中的行号
         rows = set()
         for item in items:
             rows.add(item.row())
-        self.musics_menu.addAction(act1)
-        self.musics_menu.addAction(act2)
-        self.musics_menu.addAction(act3)
+
+        # 设置子菜单归属于act3
+        self.create_ml_menu(rows)
+        act3.setMenu(self.collect_menu)
+        self.musics_menu.addMenu(self.collect_menu)
         # 只选中了一行
         if len(rows) == 1:
             self.musics_menu.addSeparator()
@@ -760,8 +803,6 @@ class MyWindow(QWidget, Ui_Form):
         self.musics_menu.addAction(act5)
         act1.triggered.connect(lambda: self.on_act1_play(rows))
         act2.triggered.connect(lambda: self.on_act2_next_play(rows))
-        # todo hover
-        act3.hovered.connect(lambda: self.on_act3_collect(rows))
         act4.triggered.connect(lambda: self.on_act4_open_file(rows))
         act5.triggered.connect(lambda: self.on_act5_del(rows))
         self.musics_menu.exec(QCursor.pos())
@@ -771,18 +812,26 @@ class MyWindow(QWidget, Ui_Form):
         # 1. 选中的音乐依次在current index后加入播放列表
         # 2. 若选中的音乐已在播放列表中, 则移除已存在的, 然后重新加入
         # 3. 播放第一个选中的音乐
+        # print("删除前: ", self.cur_play_list)
         for row in rows:
-            # todo 移除播放列表的同歌单的同歌曲(by path & from)
             music = self.cur_music_list.get(row)
-            # print(music)
             self.cur_play_list.remove(music)
+        # print("删除后: ", self.cur_play_list)
+        # print("删除后 cur index: ", self.cur_play_list.get_current_index())
         cur_index = self.cur_play_list.get_current_index()
         for row in rows:
             music = self.cur_music_list.get(row)
             cur_index += 1
             self.cur_play_list.insert_music(cur_index, music)
+        # print("重添加后: ", self.cur_play_list)
         self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
+        # todo 此处有一bug, 大概是index越界
+        # 已解决
+        # print("重添加后: ", "cur index: ", self.cur_play_list.get_current_index())
+        # print("重添加后: ", "size: ", self.cur_play_list.size())
         self.cur_play_list.set_current_index(self.cur_play_list.get_current_index() + 1)
+        # print("重设cur_index后: cur index=" , self.cur_play_list.get_current_index())
+        # print("end")
         self.stop_current()
         self.play()
         self.btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/暂停.png)}" +
@@ -795,7 +844,7 @@ class MyWindow(QWidget, Ui_Form):
     # 选中歌单列表的音乐, 点击 "下一首播放"
     def on_act2_next_play(self, rows):
         # 1. 选中的音乐依次在current index后加入播放列表
-        # 2. 若选中的音乐已在播放列表中, 则移除已存, 然后重新加入
+        # 2. 若选中的音乐已在播放列表中, 则移除已存在的, 然后重新加入
         for row in rows:
             music = self.cur_music_list.get(row)
             self.cur_play_list.remove(music)
@@ -806,8 +855,8 @@ class MyWindow(QWidget, Ui_Form):
             self.cur_play_list.insert_music(cur_index, music)
         self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
 
-    def on_act3_collect(self, rows):
-        self.collect_menu = QMenu()
+    def create_ml_menu(self, rows):
+        self.collect_menu.clear()
         act0 = QAction("创建新歌单", self)
         # act1.setIcon(QIcon("./resource/image/nav-播放.png"))
         self.collect_menu.addAction(act0)
@@ -817,8 +866,6 @@ class MyWindow(QWidget, Ui_Form):
             act = QAction(music_list.get_name(), self.collect_menu)
             self.collect_menu.addAction(act)
             act.triggered.connect(lambda: self.on_acts_choose(rows))
-
-        self.collect_menu.exec(QCursor.pos())
 
     # 选中歌单列表的音乐, 点击 "打开文件所在目录"
     def on_act4_open_file(self, rows):
@@ -866,7 +913,7 @@ class MyWindow(QWidget, Ui_Form):
         # act1.setIcon(QIcon("./resource/image/nav-播放.png"))
 
         act2 = QAction("下一首播放", self.lm_menu)
-        # act2.setIcon(QIcon("./resource/image/nav-删除.png"))
+        # act2.setIcon(QIcon("./resource/image/删除.png"))
         act3 = QAction("收藏到歌单(Ctrl+S)", self.lm_menu)
         act4 = QAction("打开文件所在目录", self.lm_menu)
         act5 = QAction("从本地磁盘删除)", self.lm_menu)

@@ -56,8 +56,16 @@ class PlayList(QObject):
 
     def remove(self, music):
         index = self.index_of(music)
+        print("index ", index)
         if index != -1:
-            self.remove_2(index)
+            self.__musics.pop(index)
+            if index <= self.__current_index:
+                self.__current_index -= 1
+
+    def remove_2(self, index):
+        self.__musics.pop(index)
+        if index < self.__current_index:
+            self.__current_index -= 1
 
     def contains(self, path):
         for music in self.__musics:
@@ -72,6 +80,7 @@ class PlayList(QObject):
                 return i
         return -1
 
+    # 来自于同歌单且path相同的music将被判断为 相同的music
     def is_same_music(self, one=Music(), another=Music()):
         if type(one) == type(another):
             if one.get_path() == another.get_path() and one.get_from().get_name() == another.get_from().get_name():
