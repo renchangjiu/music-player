@@ -16,12 +16,11 @@ import util
 import ui.test
 from search_local_music import SearchLocalMusic
 
-# TODO 右键菜单
+# todo 本地音乐或可与歌单音乐代码合并
 # TODO 本地音乐(未完成:)
 # TODO 自动滚动到当前播放音乐所在行: verticalScrollBar.setValue()
 # TODO 歌单音乐列表的右键菜单 (未完成: UI)
 # TODO UI细节调整
-# todo 本地音乐或可与歌单音乐代码合并
 # todo 歌单图片 & 显示播放数
 # TODO 优化代码
 from ui.toast import Toast
@@ -76,12 +75,14 @@ class MyWindow(QWidget, Ui_Form):
         self.init_connect()
 
     def init_data(self):
+        self.navigation.setIconSize(QSize(18, 18))
         font = QFont()
         font.setPixelSize(13)
         local_item = QListWidgetItem(self.navigation)
         local_item.setIcon(QIcon("./resource/image/本地音乐.png"))
         local_item.setText("本地音乐")
         local_item.setFont(font)
+
         self.navigation.addItem(local_item)
 
         item1 = QListWidgetItem()
@@ -91,6 +92,7 @@ class MyWindow(QWidget, Ui_Form):
 
         music_lists = os.listdir(glo_var.music_list_path)
         music_list_icon = QIcon("./resource/image/歌单.png")
+
         for music_list in music_lists:
             item = QListWidgetItem()
             item.setIcon(music_list_icon)
@@ -576,9 +578,9 @@ class MyWindow(QWidget, Ui_Form):
         # ------------------ 左边导航栏 ------------------ #
         self.navigation.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.navigation.setStyleSheet(
-            "QListWidget{outline:0px; color:#5c5c5c; background:#f5f5f7;border-top:none;border-left:none; "
+            "QListWidget{outline:0px; color:#5c5c5c; background:#f5f5f7;border-top:none;border-left:none;"
             "border-right:1px solid #e1e1e2;border-bottom:1px solid #e1e1e2}"
-            "QListWidget::Item{height:32px;border:0px solid gray;padding-left:15;}"
+            "QListWidget::Item{height:32px;border:0px solid gray;padding-left:19px;}"
             "QListWidget::Item:hover{color:#000000;background:transparent;border:0px solid gray;}"
             "QListWidget::Item:selected{color:#000000;border:0px solid gray;}"
             "QListWidget::Item:selected:active{background:#e6e7ea;color:#000000;border-left: 3px solid #c62f2f;}")
@@ -692,7 +694,8 @@ class MyWindow(QWidget, Ui_Form):
 
         # 鼠标移到收藏到歌单时的菜单
         self.collect_menu = QMenu()
-
+        # 本地音乐右键菜单
+        self.lm_menu = QMenu()
         self.nav_menu.setStyleSheet(
             "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
             "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
@@ -704,6 +707,11 @@ class MyWindow(QWidget, Ui_Form):
             "QMenu::item:selected {background-color:#ededef;}" +
             "QMenu::separator{background-color:#ededef;height:1px}")
         self.collect_menu.setStyleSheet(
+            "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
+            "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
+            "QMenu::item:selected {background-color:#ededef;}" +
+            "QMenu::separator{background-color:#ededef;height:1px}")
+        self.lm_menu.setStyleSheet(
             "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
             "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
             "QMenu::item:selected {background-color:#ededef;}" +
@@ -755,6 +763,7 @@ class MyWindow(QWidget, Ui_Form):
 
     def create_widget_action(self, icon, text):
         act = QWidgetAction(self)
+        act.setText(text)
         widget = QWidget(self)
         layout = QHBoxLayout()
         layout.setContentsMargins(13, -1, -1, 11)
@@ -791,7 +800,7 @@ class MyWindow(QWidget, Ui_Form):
             rows.add(item.row())
 
         # 设置子菜单归属于act3
-        self.create_ml_menu(rows)
+        self.create_collect_menu(rows)
         act3.setMenu(self.collect_menu)
         self.musics_menu.addMenu(self.collect_menu)
         # 只选中了一行
@@ -855,15 +864,14 @@ class MyWindow(QWidget, Ui_Form):
             self.cur_play_list.insert_music(cur_index, music)
         self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
 
-    def create_ml_menu(self, rows):
+    def create_collect_menu(self, rows):
         self.collect_menu.clear()
-        act0 = QAction("创建新歌单", self)
-        # act1.setIcon(QIcon("./resource/image/nav-播放.png"))
+        act0 = self.create_widget_action("./resource/image/添加歌单.png", "创建新歌单")
         self.collect_menu.addAction(act0)
         self.collect_menu.addSeparator()
         music_lists = util.get_music_lists()
         for music_list in music_lists:
-            act = QAction(music_list.get_name(), self.collect_menu)
+            act = self.create_widget_action("./resource/image/歌单.png", music_list.get_name())
             self.collect_menu.addAction(act)
             act.triggered.connect(lambda: self.on_acts_choose(rows))
 
@@ -908,25 +916,27 @@ class MyWindow(QWidget, Ui_Form):
         MusicList.to_disk(target_music_list)
 
     def on_tb_local_music_right_click(self, pos):
-        self.lm_menu = QMenu()
-        act1 = QAction("播放(Enter)", self.lm_menu)
-        # act1.setIcon(QIcon("./resource/image/nav-播放.png"))
+        self.lm_menu.clear()
+        act1 = self.create_widget_action("./resource/image/nav-播放.png", "播放(Enter)")
+        act2 = self.create_widget_action("./resource/image/nav-下一首播放.png", "下一首播放(Enter)")
+        act3 = QAction("收藏到歌单(Ctrl+S)", self)
+        act4 = self.create_widget_action("./resource/image/打开文件.png", "打开文件所在目录")
+        act5 = self.create_widget_action("./resource/image/删除.png", "从本地磁盘删除")
 
-        act2 = QAction("下一首播放", self.lm_menu)
-        # act2.setIcon(QIcon("./resource/image/删除.png"))
-        act3 = QAction("收藏到歌单(Ctrl+S)", self.lm_menu)
-        act4 = QAction("打开文件所在目录", self.lm_menu)
-        act5 = QAction("从本地磁盘删除)", self.lm_menu)
+        self.lm_menu.addAction(act1)
+        self.lm_menu.addAction(act2)
+        self.lm_menu.addAction(act3)
 
         # 获取被选中的行, 包括列
         items = self.tb_local_music.selectedItems()
         # 被选中的行号
         rows = set()
+        # 设置子菜单归属于act3
+        self.create_collect_menu(rows)
+        act3.setMenu(self.collect_menu)
+        self.lm_menu.addMenu(self.collect_menu)
         for item in items:
             rows.add(item.row())
-        self.lm_menu.addAction(act1)
-        self.lm_menu.addAction(act2)
-        self.lm_menu.addAction(act3)
         # 只选中了一行
         if len(rows) == 1:
             self.lm_menu.addSeparator()
@@ -936,8 +946,6 @@ class MyWindow(QWidget, Ui_Form):
         self.lm_menu.addAction(act5)
         act1.triggered.connect(lambda: self.on_lm_act1_play(rows))
         act2.triggered.connect(lambda: self.on_lm_act2_next_play(rows))
-        # todo hover
-        act3.hovered.connect(lambda: self.on_lm_act3_collect(rows))
         act4.triggered.connect(lambda: self.on_lm_act4_open_file(rows))
         act5.triggered.connect(lambda: self.on_lm_act5_del(rows))
         self.lm_menu.exec(QCursor.pos())

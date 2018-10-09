@@ -7,6 +7,8 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QSize
+
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -117,6 +119,8 @@ class Ui_Form(object):
         self.gridLayout_4.setSpacing(0)
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.navigation = QtWidgets.QListWidget(self.main_page)
+        self.navigation.setIconSize(QSize(18, 18))
+
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
