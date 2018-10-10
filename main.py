@@ -12,13 +12,12 @@ from MP3Parser import MP3
 from main_widget import Ui_Form
 from music_list import MusicList
 from ui import add_music_list
+from ui.play_list_page import PlayListPage
 import util
-import ui.test
 from search_local_music import SearchLocalMusic
 
 # TODO 本地音乐(未完成:)
 # TODO 自动滚动到当前播放音乐所在行: verticalScrollBar.setValue()
-# TODO 歌单音乐列表的右键菜单 (未完成: UI)
 # TODO UI细节调整
 # todo 歌单图片 & 显示播放数
 # TODO 重构 & 精简
@@ -569,9 +568,9 @@ class MyWindow(QWidget, Ui_Form):
         # ------------------ 左边导航栏 ------------------ #
         self.navigation.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.navigation.setStyleSheet(
-            "QListWidget{outline:0px; color:#5c5c5c; background:#f5f5f7;border-top:none;border-left:none;"
+            "QListWidget{outline:0px; color:#5c5c5c; background:#f5f5f7;border-top:none;border-left:none;font-size:13px;"
             "border-right:1px solid #e1e1e2;border-bottom:1px solid #e1e1e2}"
-            "QListWidget::Item{height:32px;border:0px solid gray;padding-left:19px;}"
+            "QListWidget::Item{height:32px;border:0px solid gray;padding-left:19px;font-size:13px;}"
             "QListWidget::Item:hover{color:#000000;background:transparent;border:0px solid gray;}"
             "QListWidget::Item:selected{color:#000000;border:0px solid gray;}"
             "QListWidget::Item:selected:active{background:#e6e7ea;color:#000000;border-left: 3px solid #c62f2f;}")
@@ -661,8 +660,7 @@ class MyWindow(QWidget, Ui_Form):
         self.label_lyric.setText(s)
 
         # 右下播放列表页面
-        self.play_list_page = ui.test.PlayListPage(self)
-
+        self.play_list_page = PlayListPage(self)
         # 本地音乐页面
         self.widget.setStyleSheet("QWidget#widget{background-color:#fafafa;border:none;}")
         self.btn_choose_dir.setFlat(True)
@@ -856,6 +854,23 @@ class MyWindow(QWidget, Ui_Form):
             self.collect_menu.addAction(act)
             act.triggered.connect(lambda: self.on_acts_choose(rows))
 
+    def on_acts_choose(self, rows):
+        # 1. 在目标歌单的末尾加入; 2. 已存在的音乐则不加入(根据path判断)
+        sender = self.sender()
+        music_list_name = sender.text()
+        target_music_list = MusicList.from_disk("%s%s" % (glo_var.music_list_path, music_list_name))
+        is_all_in = True
+        for row in rows:
+            music = self.cur_music_list.get(row)
+            if not target_music_list.contains(music.get_path()):
+                is_all_in = False
+                target_music_list.add(music)
+        if not is_all_in:
+            Toast.show_(self, "已收藏到歌单", True, 2000)
+        else:
+            Toast.show_(self, "歌曲已存在!", False, 2000)
+        MusicList.to_disk(target_music_list)
+
     # 选中歌单列表的音乐, 点击 "打开文件所在目录"
     def on_act4_open_file(self, rows):
         if len(rows) == 1:
@@ -876,22 +891,14 @@ class MyWindow(QWidget, Ui_Form):
         # 清除已选择的项
         self.musics.clearSelection()
 
-    def on_acts_choose(self, rows):
-        # 1. 在目标歌单的末尾加入; 2. 已存在的音乐则不加入(根据path判断)
-        sender = self.sender()
-        music_list_name = sender.text()
-        target_music_list = MusicList.from_disk("%s%s" % (glo_var.music_list_path, music_list_name))
-        is_all_in = True
-        for row in rows:
-            music = self.cur_music_list.get(row)
-            if not target_music_list.contains(music.get_path()):
-                is_all_in = False
-                target_music_list.add(music)
-        if not is_all_in:
-            Toast.show_(self, "已收藏到歌单", True, 2000)
-        else:
-            Toast.show_(self, "歌曲已存在!", False, 2000)
-        MusicList.to_disk(target_music_list)
+    def on_act5_del_from_disk(self, rows):
+        if 1 == 0:
+            for row in rows:
+                music = self.cur_local_music_list.get(row)
+                os.remove(music.get_path())
+            self.show_local_music_page_data()
+            # 清除已选择的项
+            self.tb_local_music.clearSelection()
 
     def on_tb_local_music_right_click(self, pos):
         self.lm_menu.clear()
@@ -925,7 +932,7 @@ class MyWindow(QWidget, Ui_Form):
         act1.triggered.connect(lambda: self.on_act1_play(rows))
         act2.triggered.connect(lambda: self.on_act2_next_play(rows))
         act4.triggered.connect(lambda: self.on_act4_open_file(rows))
-        act5.triggered.connect(lambda: self.on_act5_del(rows))
+        act5.triggered.connect(lambda: self.on_act5_del_from_disk(rows))
         self.lm_menu.exec(QCursor.pos())
 
     def del_music_list(self, music_list_name):
