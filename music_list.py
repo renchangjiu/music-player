@@ -158,6 +158,9 @@ class MusicList:
             m.set_artist(str(ms["artist"]).replace('&#34;', '"'))
             m.set_album(str(ms["album"]).replace('&#34;', '"'))
             m.set_duration(int(ms["duration"]))
+            # 兼容旧版本歌单
+            if "size" in ms:
+                m.set_size(str(ms["size"]))
             m.set_from(music_list)
             music_list.add(m)
         return music_list
@@ -179,6 +182,16 @@ class MusicList:
             album = m.get_album().lower()
             if title.find(keyword) != -1 or artist.find(keyword) != -1 or album.find(keyword) != -1:
                 ret.add(m)
+        return ret
+
+    # copy该歌单的全部内容到新歌单
+    def copy(self):
+        ret = MusicList()
+        ret.set_name(self.__name)
+        ret.set_play_count(self.__play_count)
+        ret.set_date(self.__date)
+        for m in self.__musics:
+            ret.add(m)
         return ret
 
 

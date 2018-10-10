@@ -16,13 +16,12 @@ import util
 import ui.test
 from search_local_music import SearchLocalMusic
 
-# todo 本地音乐或可与歌单音乐代码合并
 # TODO 本地音乐(未完成:)
 # TODO 自动滚动到当前播放音乐所在行: verticalScrollBar.setValue()
 # TODO 歌单音乐列表的右键菜单 (未完成: UI)
 # TODO UI细节调整
 # todo 歌单图片 & 显示播放数
-# TODO 优化代码
+# TODO 重构 & 精简
 from ui.toast import Toast
 
 
@@ -61,10 +60,6 @@ class MyWindow(QWidget, Ui_Form):
         # 当前播放列表
         self.cur_play_list = None
 
-        # 本地音乐(也是歌单)
-        self.cur_local_music_list = None
-        self.cur_whole_local_music_list = None
-
         self.setupUi(self)
         self.init_menu()
         self.init_data()
@@ -100,7 +95,6 @@ class MyWindow(QWidget, Ui_Form):
             item.setText(music_list)
             self.navigation.addItem(item)
 
-        # 设置垂直滚动条样式
         # 启动时默认选中第一个歌单
         self.navigation.setCurrentRow(2)
         path = glo_var.music_list_path
@@ -125,7 +119,7 @@ class MyWindow(QWidget, Ui_Form):
         self.musics.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.musics.setHorizontalHeaderLabels(["", "音乐标题", "歌手", "专辑", "时长"])
         self.musics.setColumnCount(5)
-        self.musics.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        self.musics.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         # 解决表头塌陷
         self.musics.horizontalHeader().setHighlightSections(False)
         # 设置整行选中
@@ -143,7 +137,7 @@ class MyWindow(QWidget, Ui_Form):
                                   "QTableWidget::item::selected{background:#e3e3e5}")
         # 设置表头
         self.musics.horizontalHeader().setStyleSheet(
-            """QHeaderView::section{background:#fafafa;border:none;border-right:1px solid #e1e1e2}
+            """QHeaderView::section{background:#fafafa;border:none;border-right:1px solid #e1e1e2;height:30px;}
             QHeaderView::section:hover{background:#ebeced;border:none}
             QHeaderView{color:#666666; border-top:1px solid #c62f2f;}
             """)
@@ -159,7 +153,7 @@ class MyWindow(QWidget, Ui_Form):
         self.tb_local_music.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.tb_local_music.setColumnCount(6)
         self.tb_local_music.setHorizontalHeaderLabels(["", "音乐标题", "歌手", "专辑", "时长", "大小"])
-        self.tb_local_music.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        self.tb_local_music.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.tb_local_music.horizontalHeader().setHighlightSections(False)
         self.tb_local_music.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tb_local_music.setShowGrid(False)  # 设置不显示格子线
@@ -174,9 +168,9 @@ class MyWindow(QWidget, Ui_Form):
                                           "QTableWidget::item::selected{background:#e3e3e5}")
         # 设置表头
         self.tb_local_music.horizontalHeader().setStyleSheet(
-            """QHeaderView::section{background:#fafafa;border:none;border-right:1px solid #e1e1e2}
-            QHeaderView::section:hover{background:#ebeced;border:none}
-            QHeaderView{color:#666666; border-top:1px solid #c62f2f;}
+            """QHeaderView::section{background:#fafafa;border:none;border-right:1px solid #e1e1e2;height:30px;}
+            QHeaderView::section:hover{background:#eceeed;border:none;}
+            QHeaderView{color:#666666; border-top:1px solid #e1e1e2;}
             """)
         self.tb_local_music.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.tb_local_music.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -184,24 +178,23 @@ class MyWindow(QWidget, Ui_Form):
     # 当点击navigation时, 显示对应页面
     def on_nav_clicked(self, QListWidgetItem_):
         text = QListWidgetItem_.text()
-        if text == "本地音乐":
-            self.show_local_music_page()
-            return
         if text == "创建的歌单":
             return
-        self.stackedWidget_2.setCurrentWidget(self.music_list_detail)
-        music_list_path = glo_var.music_list_path + text
-        self.cur_music_list = MusicList.from_disk(music_list_path)
-        self.cur_whole_music_list = MusicList.from_disk(music_list_path)
-        # 在 tableWidget中显示歌曲列表
-        self.set_musics_layout()
-        # 加载歌单中的歌曲列表
-        self.show_musics_data()
-        self.show_icon_item()
-        self.musics.setCurrentCell(0, 0)
+        if text == "本地音乐":
+            self.show_local_music_page()
+        else:
+            self.stackedWidget_2.setCurrentWidget(self.music_list_detail)
+            path = glo_var.music_list_path + text
+            self.cur_music_list = MusicList.from_disk(path)
+            self.cur_whole_music_list = MusicList.from_disk(path)
+            # 在 tableWidget中显示歌曲列表
+            self.set_musics_layout()
+            # 加载歌单中的歌曲列表
+            self.show_musics_data()
+            self.show_icon_item()
+            self.musics.setCurrentCell(0, 0)
 
-    # 将歌单中的歌曲列表加载到 table widget
-    # 需先设置列数
+    # 将歌单中的歌曲列表加载到 table widget(需先设置列数)
     def show_musics_data(self):
         self.music_list_name.setText(self.cur_music_list.get_name())
         self.music_list_date.setText("%s创建" % self.cur_music_list.get_date())
@@ -252,19 +245,18 @@ class MyWindow(QWidget, Ui_Form):
 
     def show_local_music_page(self):
         self.stackedWidget_2.setCurrentWidget(self.local_music_page)
-        self.cur_local_music_list = SearchLocalMusic.get_exist_result()
-        self.cur_whole_local_music_list = SearchLocalMusic.get_exist_result()
+        self.cur_music_list = SearchLocalMusic.get_exist_result()
+        self.cur_whole_music_list = SearchLocalMusic.get_exist_result()
         self.show_local_music_page_data()
-        # 隔行变色
         self.interlaced_discoloration()
 
     def show_local_music_page_data(self):
-        self.label_2.setText("%d首音乐" % self.cur_whole_local_music_list.size())
+        self.label_2.setText("%d首音乐" % self.cur_whole_music_list.size())
         self.tb_local_music.clearContents()
-        self.tb_local_music.setRowCount(self.cur_local_music_list.size())
+        self.tb_local_music.setRowCount(self.cur_music_list.size())
         self.set_tb_local_music_layout()
-        for i in range(self.cur_local_music_list.size()):
-            music = self.cur_local_music_list.get(i)
+        for i in range(self.cur_music_list.size()):
+            music = self.cur_music_list.get(i)
             item = QTableWidgetItem()
             item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
             item.setText(str(i + 1) + " ")
@@ -290,15 +282,14 @@ class MyWindow(QWidget, Ui_Form):
         self.tb_local_music.setColumnWidth(4, self.tb_local_music.width() * 0.07)
         self.tb_local_music.setColumnWidth(5, self.tb_local_music.width() * 0.07)
 
-    # musics_play
-    def on_musics_double_clicked(self, QModelIndex_):
+    # 当存放音乐列表的表格被双击
+    def on_tb_double_clicked(self, QModelIndex_):
         index = QModelIndex_.row()
         # 把当前歌单的全部音乐加入到播放列表
         self.cur_play_list = MusicList.to_play_list(self.cur_whole_music_list)
         self.cur_play_list.current_music_change.connect(self.on_cur_play_list_change)
         # 找到被双击的音乐在 cur_whole_music_list 中的索引
         music_index = self.cur_whole_music_list.index_of(self.cur_music_list.get(index))
-        # print(music_index)
         self.cur_play_list.set_current_index(music_index)
         self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
         self.stop_current()
@@ -400,7 +391,7 @@ class MyWindow(QWidget, Ui_Form):
         # musics
         self.musics.cellEntered.connect(self.ch_hover_color)
         self.music_list_search.textChanged.connect(self.on_search)
-        self.musics.doubleClicked.connect(self.on_musics_double_clicked)
+        self.musics.doubleClicked.connect(self.on_tb_double_clicked)
         self.musics.customContextMenuRequested.connect(self.on_musics_right_click)
 
         # 全屏播放页面
@@ -408,6 +399,7 @@ class MyWindow(QWidget, Ui_Form):
 
         # 本地音乐页面
         self.le_search_local_music.textChanged.connect(self.on_search)
+        self.tb_local_music.doubleClicked.connect(self.on_tb_double_clicked)
         self.tb_local_music.cellEntered.connect(self.on_table_cell_entered)
         self.tb_local_music.customContextMenuRequested.connect(self.on_tb_local_music_right_click)  # 右键菜单
 
@@ -469,7 +461,6 @@ class MyWindow(QWidget, Ui_Form):
             # 如果标题栏被拖动
             elif _QEvent.type() == QEvent.MouseMove:
                 if _QEvent.buttons() == Qt.LeftButton:
-                    # print(self.windowState() == Qt.WindowMaximized)
                     if self.windowState() == Qt.WindowNoState:
                         self.move(_QEvent.globalPos() - self.point)
         # 3. 当鼠标移动到music_image时显示遮罩层
@@ -821,26 +812,16 @@ class MyWindow(QWidget, Ui_Form):
         # 1. 选中的音乐依次在current index后加入播放列表
         # 2. 若选中的音乐已在播放列表中, 则移除已存在的, 然后重新加入
         # 3. 播放第一个选中的音乐
-        # print("删除前: ", self.cur_play_list)
         for row in rows:
             music = self.cur_music_list.get(row)
             self.cur_play_list.remove(music)
-        # print("删除后: ", self.cur_play_list)
-        # print("删除后 cur index: ", self.cur_play_list.get_current_index())
         cur_index = self.cur_play_list.get_current_index()
         for row in rows:
             music = self.cur_music_list.get(row)
             cur_index += 1
             self.cur_play_list.insert_music(cur_index, music)
-        # print("重添加后: ", self.cur_play_list)
         self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
-        # todo 此处有一bug, 大概是index越界
-        # 已解决
-        # print("重添加后: ", "cur index: ", self.cur_play_list.get_current_index())
-        # print("重添加后: ", "size: ", self.cur_play_list.size())
         self.cur_play_list.set_current_index(self.cur_play_list.get_current_index() + 1)
-        # print("重设cur_index后: cur index=" , self.cur_play_list.get_current_index())
-        # print("end")
         self.stop_current()
         self.play()
         self.btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/暂停.png)}" +
@@ -902,10 +883,7 @@ class MyWindow(QWidget, Ui_Form):
         target_music_list = MusicList.from_disk("%s%s" % (glo_var.music_list_path, music_list_name))
         is_all_in = True
         for row in rows:
-            if self.stackedWidget_2.currentWidget() == self.music_list_detail:
-                music = self.cur_music_list.get(row)
-            elif self.stackedWidget_2.currentWidget() == self.local_music_page:
-                music = self.cur_local_music_list.get(row)
+            music = self.cur_music_list.get(row)
             if not target_music_list.contains(music.get_path()):
                 is_all_in = False
                 target_music_list.add(music)
@@ -944,72 +922,11 @@ class MyWindow(QWidget, Ui_Form):
         else:
             self.lm_menu.addSeparator()
         self.lm_menu.addAction(act5)
-        act1.triggered.connect(lambda: self.on_lm_act1_play(rows))
-        act2.triggered.connect(lambda: self.on_lm_act2_next_play(rows))
-        act4.triggered.connect(lambda: self.on_lm_act4_open_file(rows))
-        act5.triggered.connect(lambda: self.on_lm_act5_del(rows))
+        act1.triggered.connect(lambda: self.on_act1_play(rows))
+        act2.triggered.connect(lambda: self.on_act2_next_play(rows))
+        act4.triggered.connect(lambda: self.on_act4_open_file(rows))
+        act5.triggered.connect(lambda: self.on_act5_del(rows))
         self.lm_menu.exec(QCursor.pos())
-
-    def on_lm_act1_play(self, rows):
-        # 1. 选中的音乐依次在current index后加入播放列表
-        # 2. 播放第一个选中的音乐
-        # print(rows)
-        cur_index = self.cur_play_list.get_current_index()
-        # print(self.cur_play_list)
-        for row in rows:
-            music = self.cur_local_music_list.get(row)
-            # print(music)
-            cur_index += 1
-            self.cur_play_list.insert_music(cur_index, music)
-        # print(self.cur_play_list)
-        self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
-        self.cur_play_list.set_current_index(self.cur_play_list.get_current_index() + 1)
-        self.stop_current()
-        self.play()
-        self.btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/暂停.png)}" +
-                                     "QPushButton:hover{border-image:url(./resource/image/暂停2.png)}")
-        if self.is_mute:
-            self.process.write(b"mute 1\n")
-        self.state = self.playing_state
-        self.show_music_info()
-
-    def on_lm_act2_next_play(self, rows):
-        # 1. 选中的音乐依次在current index后加入播放列表
-        cur_index = self.cur_play_list.get_current_index()
-        for row in rows:
-            music = self.cur_local_music_list.get(row)
-            cur_index += 1
-            self.cur_play_list.insert_music(cur_index, music)
-        self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
-
-    def on_lm_act3_collect(self, rows):
-        self.collect_menu = QMenu()
-        act0 = QAction("创建新歌单", self)
-        # act1.setIcon(QIcon("./resource/image/nav-播放.png"))
-        self.collect_menu.addAction(act0)
-        self.collect_menu.addSeparator()
-        music_lists = util.get_music_lists()
-        for music_list in music_lists:
-            act = QAction(music_list.get_name(), self.collect_menu)
-            self.collect_menu.addAction(act)
-            act.triggered.connect(lambda: self.on_acts_choose(rows))
-
-        self.collect_menu.exec(QCursor.pos())
-
-    def on_lm_act4_open_file(self, rows):
-        if len(rows) == 1:
-            music = self.cur_local_music_list.get(rows.pop())
-            command = "explorer /select, %s" % music.get_path().replace("/", "\\")
-            os.system(command)
-
-    def on_lm_act5_del(self, rows):
-        if 1 == 0:
-            for row in rows:
-                music = self.cur_local_music_list.get(row)
-                os.remove(music.get_path())
-            self.show_local_music_page_data()
-            # 清除已选择的项
-            self.tb_local_music.clearSelection()
 
     def del_music_list(self, music_list_name):
         path = "%s%s" % (glo_var.music_list_path, music_list_name)
@@ -1019,19 +936,14 @@ class MyWindow(QWidget, Ui_Form):
 
     def on_search(self, text):
         text = text.strip()
+        if len(text) != 0:
+            self.cur_music_list = self.cur_whole_music_list.search(text)
+        else:
+            self.cur_music_list = self.cur_whole_music_list.copy()
+        # 显示当前页面显示两个不同的表格
         if self.stackedWidget_2.currentWidget() == self.music_list_detail:
-            if len(text) != 0:
-                self.cur_music_list = self.cur_whole_music_list.search(text)
-            else:
-                text = self.navigation.currentItem().text()
-                self.cur_music_list = MusicList.from_disk(glo_var.music_list_path + text)
-            # self.show_musics_data()
             self.show_icon_item()
         elif self.stackedWidget_2.currentWidget() == self.local_music_page:
-            if len(text) != 0:
-                self.cur_local_music_list = self.cur_whole_local_music_list.search(text)
-            else:
-                self.cur_local_music_list = SearchLocalMusic.get_exist_result()
             self.show_local_music_page_data()
 
     # 为musics(tablewidget)的某一行显示喇叭图片
@@ -1153,7 +1065,6 @@ class MyWindow(QWidget, Ui_Form):
 
         while self.process.canReadLine():
             output = str(self.process.readLine())
-            # print(output)
             duration_match = duration_pattern.search(output)
             position_match = position_pattern.search(output)
             # 处理时长
@@ -1169,8 +1080,6 @@ class MyWindow(QWidget, Ui_Form):
                 self.label_pos.setText(position)
 
                 time = int(float(p) * 1000)
-                # print(time)
-                # self.label_lyric.setText(lrc.show(time))
                 self.lrc_scroll(lrc, time)
                 if self.duration != -1:
                     slider_position = int(float(p) / self.duration * 100)

@@ -13,7 +13,7 @@ class SearchLocalMusic:
 
     @staticmethod
     def search():
-        # todo 搜索完成, 发出信号
+        # todo 搜索完成, 写入文件, 发出信号, 使其重读取文件
         # 以 .mp3结尾, 大于100kb的文件
         paths = []
         # 合法的mp3文件
@@ -57,24 +57,7 @@ class SearchLocalMusic:
     def get_exist_result():
         try:
             path = "./data/local-music.json"
-            file = open(path, "r", encoding="utf-8")
-            json_obj = json.loads(file.read())
-            file.close()
-            temp = json_obj["musics"]
-            ret = MusicList()
-            for m in temp:
-                music = Music()
-                music.set_path(decode(m["path"]))
-                music.set_title(decode(m["title"]))
-                music.set_artist(decode(m["artist"]))
-                music.set_album(decode(m["album"]))
-                music.set_duration(int(m["duration"]))
-                music.set_size(decode(m["size"]))
-                ret.add(music)
-            # print(ret)
-            # for m in ret:
-            #     print(m)
-            return ret
+            return MusicList.from_disk(path)
         except FileNotFoundError as err:
             return None
 
