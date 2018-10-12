@@ -120,7 +120,7 @@ class MusicList:
         f.close()
         return True
 
-    # 将特殊字符转义( " ->  &#34;)
+    # 将特殊字符转义( " ->  &#34; \ -> &#92;)
     @staticmethod
     def __encode(ml):
         ml.set_name(ml.get_name().replace('"', "&#34;").replace('\\', "&#92;"))

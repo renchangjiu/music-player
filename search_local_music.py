@@ -4,7 +4,6 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QObject
 
 from MP3Parser import MP3
-from util import format_time, encode, decode
 
 from music import Music
 from music_list import MusicList
@@ -22,7 +21,7 @@ class SearchLocalMusic(QObject):
     def search():
         # todo 搜索完成, 写入文件, 发出信号, 使其重读取文件
         # 以 .mp3结尾, 大于100kb的文件
-        paths = []
+        paths = set()
         # 合法的mp3文件
         musics = []
         pans = SearchLocalMusic.__get_exist_pan()
@@ -33,11 +32,11 @@ class SearchLocalMusic(QObject):
         SearchLocalMusic.__to_json(musics)
 
     def search_in_path(self, search_paths):
+        # todo 搜索完成, 写入文件, 发出信号, 使其重读取文件
         self.begin_search.emit()
         print("开始搜索: ", search_paths)
-        # todo 搜索完成, 写入文件, 发出信号, 使其重读取文件
         # 以 .mp3结尾, 大于100kb的文件
-        paths = []
+        paths = set()
         # 合法的mp3文件
         musics = []
         for search_path in search_paths:
@@ -90,7 +89,7 @@ class SearchLocalMusic(QObject):
                 else:
                     p = path + f
                 if (f.endswith("mp3") or f.endswith("MP3")) and os.path.getsize(p) > 100 * 1024:
-                    paths.append(p)
+                    paths.add(p)
                 if os.path.isdir(p):
                     SearchLocalMusic.__loop_all(p, paths)
             return paths

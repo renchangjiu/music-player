@@ -1,8 +1,11 @@
 import re, os, sys
+import threading
+import winreg
+
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, QTimer, QProcess, QEvent, QSize, QPointF
 from PyQt5.QtGui import QPixmap, QBrush, QFont, QColor, QIcon, QImage, QFontMetrics, QCursor, QLinearGradient, \
-    QGradient, QPainter
+    QGradient, QPainter, QMovie
 from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QAbstractItemView, QListWidgetItem, QTableWidgetItem, \
     QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout
 
@@ -12,16 +15,15 @@ from MP3Parser import MP3
 from main_widget import Ui_Form
 from music_list import MusicList
 from ui import add_music_list
+from ui.choose_music_dir import ChooseMusicDirPage
 from ui.play_list_page import PlayListPage
 import util
 from search_local_music import SearchLocalMusic
-import ui.test
 
-# TODO 本地音乐(未完成:)
 # TODO 自动滚动到当前播放音乐所在行: verticalScrollBar.setValue()
 # TODO UI细节调整
 # todo 歌单图片 & 显示播放数
-# TODO 重构 & 精简
+# TODO 重构 & 拆分入口文件
 from ui.toast import Toast
 
 
@@ -61,6 +63,7 @@ class MyWindow(QWidget, Ui_Form):
         self.cur_play_list = None
 
         self.setupUi(self)
+
         self.init_menu()
         self.init_data()
         self.init_table_widget_ui()
@@ -68,6 +71,36 @@ class MyWindow(QWidget, Ui_Form):
         self.init_button()
         self.init_shortcut()
         self.init_connect()
+
+        self.research_local_music()
+
+    def research_local_music(self):
+        search_local_music = SearchLocalMusic()
+        search_local_music.begin_search.connect(self.begin_search)
+        search_local_music.end_search.connect(self.end_search)
+        thread = threading.Thread(target=lambda: self.sub_thread(search_local_music))
+        thread.start()
+
+    def begin_search(self):
+        # 等待动画
+        # self.label_search_gif = QLabel(self.navigation)
+        # movie = QMovie("./resource/等待.gif")
+        # self.label_search_gif.setMovie(movie)
+        # self.label_search_gif.setGeometry(160, 19, 200, 200)
+        # self.label_search_gif.show()
+        # movie.start()
+        self.label_search_state.setText("正在更新本地音乐列表...")
+
+    def end_search(self):
+        self.label_search_state.setText("更新完成")
+
+    def sub_thread(self, search_local_music):
+        paths = ChooseMusicDirPage.get_music_path()
+        temp = []
+        for path in paths:
+            if path[1] == "checked":
+                temp.append(path[0])
+        search_local_music.search_in_path(temp)
 
     def init_data(self):
         self.navigation.setIconSize(QSize(18, 18))
@@ -247,7 +280,6 @@ class MyWindow(QWidget, Ui_Form):
         self.cur_music_list = SearchLocalMusic.get_exist_result()
         self.cur_whole_music_list = SearchLocalMusic.get_exist_result()
         self.show_local_music_page_data()
-        self.interlaced_discoloration()
 
     def show_local_music_page_data(self):
         self.label_2.setText("%d首音乐" % self.cur_whole_music_list.size())
@@ -265,6 +297,7 @@ class MyWindow(QWidget, Ui_Form):
             self.tb_local_music.setItem(i, 3, QTableWidgetItem(str(music.get_album())))
             self.tb_local_music.setItem(i, 4, QTableWidgetItem(str(util.format_time(music.get_duration()))))
             self.tb_local_music.setItem(i, 5, QTableWidgetItem(str(music.get_size())))
+        self.interlaced_discoloration()
 
     def set_musics_layout(self):
         self.musics.setColumnWidth(0, self.musics.width() * 0.06)
@@ -665,7 +698,8 @@ class MyWindow(QWidget, Ui_Form):
         # 本地音乐页面
         self.widget.setStyleSheet("QWidget#widget{background-color:#fafafa;border:none;}")
         self.btn_choose_dir.setFlat(True)
-        self.btn_choose_dir.setStyleSheet("background:none;color:#0a63a8")
+        self.btn_choose_dir.setStyleSheet("QPushButton#btn_choose_dir{background:none;color:#0a63a8;border:none;}")
+        self.btn_choose_dir.setCursor(Qt.PointingHandCursor)
         # 搜索框
         self.le_search_local_music.setStyleSheet(
             "QLineEdit#le_search_local_music{border:none;border-radius:10px;padding:2px 4px; background-color:#ffffff;" +
@@ -985,7 +1019,7 @@ class MyWindow(QWidget, Ui_Form):
         self.show_icon_item()
 
     def show_choose_music_dir_page(self):
-        self.choose_music_dir_page = ui.test.ChooseMusicDirPage(self)
+        self.choose_music_dir_page = ChooseMusicDirPage(self)
         self.choose_music_dir_page.local_musics_change.connect(self.reload_local_musics)
         self.choose_music_dir_page.exec()
 
@@ -1188,6 +1222,7 @@ class MyWindow(QWidget, Ui_Form):
 
 
 def main():
+    init_install()
     app = QtWidgets.QApplication(sys.argv)
     # qss = open("./resource/qss/main.qss", "r", encoding="utf-8")
     # read = qss.read()
@@ -1197,5 +1232,19 @@ def main():
     sys.exit(app.exec_())
 
 
+def init_install():
+    if not os.path.exists("./data/install-flag"):
+        with open("./data/install-flag", "w", encoding="utf-8") as p:
+            pass
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                             r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
+        windows_music_path = winreg.QueryValueEx(key, "My Music")[0]
+        if not os.path.exists("./data/config.ini"):
+            config_file = open("./data/config.ini", "w", encoding="utf-8")
+            config_file.write("[music-path]\npath=%s*checked" % windows_music_path)
+            config_file.close()
+
+
 if __name__ == "__main__":
     main()
+    # init_install()
