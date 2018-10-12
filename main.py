@@ -15,6 +15,7 @@ from ui import add_music_list
 from ui.play_list_page import PlayListPage
 import util
 from search_local_music import SearchLocalMusic
+import ui.test
 
 # TODO 本地音乐(未完成:)
 # TODO 自动滚动到当前播放音乐所在行: verticalScrollBar.setValue()
@@ -186,7 +187,6 @@ class MyWindow(QWidget, Ui_Form):
             path = glo_var.music_list_path + text
             self.cur_music_list = MusicList.from_disk(path)
             self.cur_whole_music_list = MusicList.from_disk(path)
-            # 在 tableWidget中显示歌曲列表
             self.set_musics_layout()
             # 加载歌单中的歌曲列表
             self.show_musics_data()
@@ -401,6 +401,7 @@ class MyWindow(QWidget, Ui_Form):
         self.tb_local_music.doubleClicked.connect(self.on_tb_double_clicked)
         self.tb_local_music.cellEntered.connect(self.on_table_cell_entered)
         self.tb_local_music.customContextMenuRequested.connect(self.on_tb_local_music_right_click)  # 右键菜单
+        self.btn_choose_dir.clicked.connect(self.show_choose_music_dir_page)
 
     def init_shortcut(self):
         pause_play_act = QAction(self)
@@ -982,6 +983,18 @@ class MyWindow(QWidget, Ui_Form):
 
     def on_cur_play_list_change(self, music):
         self.show_icon_item()
+
+    def show_choose_music_dir_page(self):
+        self.choose_music_dir_page = ui.test.ChooseMusicDirPage(self)
+        self.choose_music_dir_page.local_musics_change.connect(self.reload_local_musics)
+        self.choose_music_dir_page.exec()
+
+    # 当改变了本地音乐的搜索路径, 重新读取本地音乐文件
+    def reload_local_musics(self):
+        self.cur_music_list = SearchLocalMusic.get_exist_result()
+        self.cur_whole_music_list = SearchLocalMusic.get_exist_result()
+        self.show_local_music_page_data()
+        self.interlaced_discoloration()
 
     def play_pause(self):
         if self.cur_play_list is not None:

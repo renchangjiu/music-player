@@ -92,7 +92,7 @@ class AddMusicListDialog(QtWidgets.QDialog, Ui_Dialog):
         # animation.setDuration(100000)
         # animation.setStartValue(0)
         # animation.setEndValue(1)
-        # animation.start()
+        # animation.start()/
 
         self.setStyleSheet("QDialog{border:2px solid #c8c8c9; border-radius:5px}")
         self.label.setStyleSheet("color:333333;font-size:20px")

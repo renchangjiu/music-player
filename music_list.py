@@ -89,7 +89,7 @@ class MusicList:
         return play_list
 
     @staticmethod
-    def to_disk(ml):
+    def to_disk(ml, path=""):
         """ 将MusicList中的音乐信息转成json(不包括image), 存入硬盘"""
         if ml.get_name() is None or ml.get_name() == "":
             return False
@@ -100,17 +100,22 @@ class MusicList:
             date = datetime.now().strftime("%F")
             ml.set_date(date)
         ret = "{"
-        ret += '"name": "%s", "size": %d, "play_count": %d, "date": "%s", ' % (ml.get_name(), ml.size(), ml.get_play_count(), ml.get_date())
+        ret += '"name": "%s", "size": %d, "play_count": %d, "date": "%s", ' % (
+            ml.get_name(), ml.size(), ml.get_play_count(), ml.get_date())
         ret += '"musics":['
         for i in range(ml.size()):
             music = ml.get(i)
-            ret += '{"path": "%s", "file_name": "%s", "title": "%s", "artist": "%s", "album": "%s", "duration": %d},' % (
+            ret += '{"path": "%s", "file_name": "%s", "title": "%s", "artist": "%s", "album": "%s", "duration": %d, "size": "%s"},' % (
                 music.get_path(), music.get_file_name(), music.get_title(), music.get_artist(), music.get_album(),
-                music.get_duration())
+                music.get_duration(), music.get_size())
         if ml.size() > 0:
             ret = ret[0:-1]
         ret += "]}"
-        f = open(r"%s%s" % (glo_var.music_list_path, ml.get_name()), "w", encoding="utf-8")
+
+        if path == "":
+            f = open(r"%s%s" % (glo_var.music_list_path, ml.get_name()), "w", encoding="utf-8")
+        else:
+            f = open(r"%s%s" % (path, ml.get_name()), "w", encoding="utf-8")
         f.write(ret)
         f.close()
         return True
@@ -118,13 +123,13 @@ class MusicList:
     # 将特殊字符转义( " ->  &#34;)
     @staticmethod
     def __encode(ml):
-        ml.set_name(ml.get_name().replace('"', "&#34;"))
+        ml.set_name(ml.get_name().replace('"', "&#34;").replace('\\', "&#92;"))
         for i in range(ml.size()):
             m = ml.get(i)
-            m.set_path(m.get_path().replace('"', "&#34;"))
-            m.set_title(m.get_title().replace('"', "&#34;"))
-            m.set_artist(m.get_artist().replace('"', "&#34;"))
-            m.set_album(m.get_album().replace('"', "&#34;"))
+            m.set_path(m.get_path().replace('"', "&#34;").replace('\\', "&#92;"))
+            m.set_title(m.get_title().replace('"', "&#34;").replace('\\', "&#92;"))
+            m.set_artist(m.get_artist().replace('"', "&#34;").replace('\\', "&#92;"))
+            m.set_album(m.get_album().replace('"', "&#34;").replace('\\', "&#92;"))
         return ml
 
     # 转义回来, 暂时无用
@@ -144,7 +149,6 @@ class MusicList:
         # 从磁盘文件中读取MusicList
         f = open(path, "r", encoding="utf-8")
         json_str = json.loads(f.read(), encoding="utf-8")
-
         music_list = MusicList()
         music_list.set_name(json_str["name"].replace('&#34;', '"'))
         music_list.set_play_count(json_str["play_count"])
@@ -153,10 +157,10 @@ class MusicList:
         for i in range(len(m_list)):
             m = Music()
             ms = m_list[i]
-            m.set_path(str(ms["path"]).replace('&#34;', '"'))
-            m.set_title(str(ms["title"]).replace('&#34;', '"'))
-            m.set_artist(str(ms["artist"]).replace('&#34;', '"'))
-            m.set_album(str(ms["album"]).replace('&#34;', '"'))
+            m.set_path(str(ms["path"]).replace('&#34;', '"').replace('&#92;', "\\"))
+            m.set_title(str(ms["title"]).replace('&#34;', '"').replace('&#92;', "\\"))
+            m.set_artist(str(ms["artist"]).replace('&#34;', '"').replace('&#92;', "\\"))
+            m.set_album(str(ms["album"]).replace('&#34;', '"').replace('&#92;', "\\"))
             m.set_duration(int(ms["duration"]))
             # 兼容旧版本歌单
             if "size" in ms:
@@ -214,6 +218,7 @@ def test_4_to_disk():
 def test_4_from_disk():
     # print(music_list)
     pass
+
 
 def add_all_loacl_music():
     path = r"D:/13595/Music/"
