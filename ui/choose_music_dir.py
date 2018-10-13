@@ -15,10 +15,10 @@ from PyQt5.QtGui import QPixmap, QBrush, QFont, QColor, QIcon, QImage, QFontMetr
 from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QAbstractItemView, QListWidgetItem, QTableWidgetItem, \
     QAction, QMenu, QLabel, QCheckBox, QFileDialog
 
-from PyQt5 import QtCore, QtGui, QtWidgets
 
 from search_local_music import SearchLocalMusic
 
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -75,7 +75,7 @@ class Ui_Dialog(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 277, 181))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 280, 181))
         font = QtGui.QFont()
         font.setFamily("宋体")
         self.scrollAreaWidgetContents.setFont(font)
@@ -143,6 +143,7 @@ class Ui_Dialog(object):
         self.label_2.setText(_translate("Dialog", " 将自动扫描您勾选的目录, 文件增删实时同步"))
 
 
+
 class ChooseMusicDirPage(QtWidgets.QDialog, Ui_Dialog):
     local_musics_change = QtCore.pyqtSignal()
 
@@ -163,8 +164,10 @@ class ChooseMusicDirPage(QtWidgets.QDialog, Ui_Dialog):
         self.btn_confirm.clicked.connect(self.on_confirm)
 
     def add_checkbox(self, text):
-        check_box = QCheckBox(text, self.scrollAreaWidgetContents)
-        self.verticalLayout.addWidget(check_box)
+        # 特殊字符, 把一个 &, 替换成两个 &&, 以正常显示一个&
+        check_box = QCheckBox(text.replace("&", "&&"), self.scrollAreaWidgetContents)
+        check_box.setToolTip(text)
+        self.verticalLayout.addWidget(check_box, alignment=Qt.AlignTop)
         return check_box
 
     @staticmethod

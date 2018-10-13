@@ -34,7 +34,6 @@ class SearchLocalMusic(QObject):
     def search_in_path(self, search_paths):
         # todo 搜索完成, 写入文件, 发出信号, 使其重读取文件
         self.begin_search.emit()
-        print("开始搜索: ", search_paths)
         # 以 .mp3结尾, 大于100kb的文件
         paths = set()
         # 合法的mp3文件

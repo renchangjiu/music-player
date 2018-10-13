@@ -21,6 +21,7 @@ import util
 from search_local_music import SearchLocalMusic
 
 # TODO 自动滚动到当前播放音乐所在行: verticalScrollBar.setValue()
+# todo tablewidget 列宽可调节
 # TODO UI细节调整
 # todo 歌单图片 & 显示播放数
 # TODO 重构 & 拆分入口文件
@@ -82,6 +83,7 @@ class MyWindow(QWidget, Ui_Form):
         thread.start()
 
     def begin_search(self):
+        print("开始搜索")
         # 等待动画
         # self.label_search_gif = QLabel(self.navigation)
         # movie = QMovie("./resource/等待.gif")
@@ -92,6 +94,7 @@ class MyWindow(QWidget, Ui_Form):
         self.label_search_state.setText("正在更新本地音乐列表...")
 
     def end_search(self):
+        print("结束")
         self.label_search_state.setText("更新完成")
 
     def sub_thread(self, search_local_music):
