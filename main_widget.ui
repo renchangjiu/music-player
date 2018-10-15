@@ -320,7 +320,7 @@
        <item row="0" column="1" rowspan="2">
         <widget class="QStackedWidget" name="stackedWidget_2">
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="music_list_detail">
           <layout class="QGridLayout" name="gridLayout_3">
@@ -600,7 +600,7 @@ color: rgb(225, 225, 226);</string>
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QTableWidget" name="musics">
+            <widget class="TableWidget" name="musics">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                <horstretch>0</horstretch>
@@ -784,7 +784,7 @@ color: rgb(225, 225, 226);</string>
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QTableWidget" name="tb_local_music">
+            <widget class="TableWidget" name="tb_local_music">
              <property name="font">
               <font>
                <pointsize>10</pointsize>
@@ -1020,7 +1020,7 @@ color: rgb(225, 225, 226);</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
+            <width>81</width>
             <height>39</height>
            </rect>
           </property>
@@ -1133,7 +1133,7 @@ color: rgb(225, 225, 226);</string>
        <number>0</number>
       </property>
       <property name="rightMargin">
-       <number>6</number>
+       <number>14</number>
       </property>
       <property name="bottomMargin">
        <number>0</number>
@@ -1396,13 +1396,13 @@ color: rgb(225, 225, 226);</string>
         <property name="minimumSize">
          <size>
           <width>18</width>
-          <height>18</height>
+          <height>14</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>18</width>
-          <height>18</height>
+          <height>14</height>
          </size>
         </property>
         <property name="text">
@@ -1436,14 +1436,14 @@ color: rgb(225, 225, 226);</string>
         </property>
         <property name="minimumSize">
          <size>
-          <width>22</width>
-          <height>22</height>
+          <width>16</width>
+          <height>16</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>22</width>
-          <height>22</height>
+          <width>16</width>
+          <height>16</height>
          </size>
         </property>
         <property name="text">
@@ -1477,14 +1477,14 @@ color: rgb(225, 225, 226);</string>
         </property>
         <property name="minimumSize">
          <size>
-          <width>14</width>
-          <height>14</height>
+          <width>19</width>
+          <height>17</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>14</width>
-          <height>14</height>
+          <width>19</width>
+          <height>17</height>
          </size>
         </property>
         <property name="text">
@@ -1495,15 +1495,21 @@ color: rgb(225, 225, 226);</string>
       <item>
        <widget class="QLabel" name="label_play_count">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>30</width>
+          <height>16</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
-          <width>16777215</width>
-          <height>14</height>
+          <width>30</width>
+          <height>16</height>
          </size>
         </property>
         <property name="text">
@@ -1516,6 +1522,13 @@ color: rgb(225, 225, 226);</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TableWidget</class>
+   <extends>QTableWidget</extends>
+   <header>tablewidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

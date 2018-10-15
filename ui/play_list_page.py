@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QAbstractItemView, 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import util
+from tablewidget import TableWidget
 
 
 class Ui_Form(object):
@@ -70,7 +71,7 @@ class Ui_Form(object):
         self.pushButton_2.setObjectName("pushButton_2")
         self.horizontalLayout.addWidget(self.pushButton_2)
         self.gridLayout_2.addWidget(self.widget, 0, 0, 1, 1)
-        self.tableWidget = QtWidgets.QTableWidget(self.play_list)
+        self.tableWidget = TableWidget(self.play_list)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)
@@ -97,7 +98,7 @@ class Ui_Form(object):
         self.pushButton_3.setObjectName("pushButton_3")
         self.horizontalLayout_2.addWidget(self.pushButton_3)
         self.gridLayout_3.addWidget(self.widget_2, 0, 0, 1, 1)
-        self.tableWidget_2 = QtWidgets.QTableWidget(self.history)
+        self.tableWidget_2 = TableWidget(self.history)
         self.tableWidget_2.setObjectName("tableWidget_2")
         self.tableWidget_2.setColumnCount(0)
         self.tableWidget_2.setRowCount(0)
@@ -122,7 +123,7 @@ class Ui_Form(object):
 
 
 class PlayListPage(QWidget, Ui_Form):
-    def __init__(self, parent):
+    def __init__(self, parent, ):
         QWidget.__init__(self)
         Ui_Form.__init__(self)
         self.setupUi(self)
@@ -131,54 +132,44 @@ class PlayListPage(QWidget, Ui_Form):
         self.__init_ui()
         self.__init_table_widget_ui()
         self.__set_table_widget_width()
+        self.init_connect()
+
+    def init_connect(self):
+        self.tableWidget.cellPressed.connect(self.open_music_list)
+
+    def open_music_list(self, row, column):
+        pass
+        print(row)
+        # print(column)
 
     def __init_ui(self):
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.tabWidget.setCurrentWidget(self.play_list)
-        # self.setStyleSheet('border:1px solid red')
-
         self.tabWidget.tabBar().setCursor(Qt.PointingHandCursor)
-        self.tabWidget.setStyleSheet("QTabWidget{border:10px solid red;}")
         self.tabWidget.setStyleSheet("QTabWidget::pane{border-top: 1px solid #e1e1e2;}" +
                                      "QTabWidget::tab-bar{alignment:center;height:46px;}" +
-                                     "QTabBar::tab:!selected{height:38px;background-color:#7c7d86; color: #ffffff;}" +
-                                     "QTabBar::tab:selected:hover{height:38px;background:#f5f5f7;}"
+                                     "QTabBar::tab{height:26px;width:128px;border-radius:4px;}" +
+                                     "QTabBar::tab:selected{background-color:#7c7d86;color:#ffffff;}" +
+                                     "QTabBar::tab:!selected{background-color:#ffffff;color:#888888;}" +
+                                     "QTabBar::tab:!selected:hover{background:#f5f5f7;color:#666666;}"
                                      )
-
         self.widget.setStyleSheet(
             "background:#f9f9f9;border:none;border-bottom:1px solid #efefef;border-left:1px solid #c3c3c4;")
         self.label.setStyleSheet("border:none")
         self.label_2.setStyleSheet("border:none")
         self.widget_2.setStyleSheet(
             "background:#f9f9f9;border:none;border-bottom:1px solid #efefef;border-left:1px solid #c3c3c4;")
+        self.pushButton.setStyleSheet("QPushButton{color:#666666;border:none;}QPushButton:hover{color:#444444;}")
+        self.pushButton_2.setStyleSheet("QPushButton{color:#666666;border:none;}QPushButton:hover{color:#444444;}")
+        self.pushButton.setCursor(Qt.PointingHandCursor)
+        self.pushButton_2.setCursor(Qt.PointingHandCursor)
 
     def __init_table_widget_ui(self):
         self.tableWidget.setColumnCount(5)
-        # 隐藏默认行号
-        self.tableWidget.verticalHeader().setHidden(True)
+        self.tableWidget.setHorizontalHeaderLabels(["", "音乐标题", "歌手", "专辑", "时长"])
         self.tableWidget.horizontalHeader().setHidden(True)
-        # 按住Ctrl or shift选择
-        self.tableWidget.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        # 解决表头塌陷
-        self.tableWidget.horizontalHeader().setHighlightSections(False)
-        # 设置整行选中
-        self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tableWidget.setShowGrid(False)  # 设置不显示格子线
-        self.tableWidget.setFocusPolicy(Qt.NoFocus)  # 去除选中虚线框
-        self.tableWidget.setMouseTracking(True)
-        self.tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        # 设置垂直滚动条样式
-        self.tableWidget.verticalScrollBar().setStyleSheet("QScrollBar{background:#fafafa; width: 10px;}"
-                                                           "QScrollBar::handle{background:#e1e1e2; border:2px solid transparent; border-radius:5px;}"
-                                                           "QScrollBar::handle:hover{background:#cfcfd1;}"
-                                                           "QScrollBar::sub-line{background:transparent;}"
-                                                           "QScrollBar::add-line{background:transparent;}")
-        self.tableWidget.setStyleSheet("QTableWidget{border:none;border-left:1px solid #c0c0c1}" +
-                                       "QTableWidget::item::selected{background:#e3e3e5}")
-        # 隐藏横向滚动条
-        self.tableWidget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # 更改右键策略
-        self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tableWidget.setStyleSheet("QTableWidget{border:none;border-left:1px solid #c0c0c1;background:#fafafa;}" +
+                                       "QTableWidget::item::selected{background-color:#e3e3e5}")
 
     def __set_table_widget_width(self):
         self.tableWidget.setColumnWidth(0, self.width() * 0.03)
@@ -194,33 +185,44 @@ class PlayListPage(QWidget, Ui_Form):
         self.tableWidget.setRowCount(play_list.size())
         self.label.setText("共%d首" % play_list.size())
         icon = QIcon("./resource/image/链接.png")
+
         for i in range(play_list.size()):
+            self.btn_link = QLabel(self.tableWidget)
+            self.btn_link.setStyleSheet("background-color:rgba(0,0,0,0)")
+            self.btn_link.setPixmap(QPixmap("./resource/image/链接.png"))
+            self.btn_link.setAlignment(Qt.AlignCenter)
+            self.btn_link.setCursor(Qt.PointingHandCursor)
+            self.btn_link.installEventFilter(self)
+
+            # icon_item = QTableWidgetItem()
+            # icon_item.setIcon(icon)
             music = play_list.get(i)
-            icon_item = QTableWidgetItem()
-            icon_item.setIcon(icon)
             self.tableWidget.setItem(i, 0, QTableWidgetItem("\t"))
             self.tableWidget.setItem(i, 1, QTableWidgetItem(str(music.get_title())))
             self.tableWidget.setItem(i, 2, QTableWidgetItem(str(music.get_artist())))
-            self.tableWidget.setItem(i, 3, icon_item)
+            # self.tableWidget.setItem(i, 3, icon_item)
+            self.tableWidget.setCellWidget(i, 3, self.btn_link)
+
             self.tableWidget.setItem(i, 4, QTableWidgetItem(str(util.format_time(music.get_duration()))))
+
         # 为当前音乐设置喇叭图标
         icon_label = QLabel()
         icon_label.setPixmap(QPixmap("./resource/image/musics_play.png"))
         icon_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        icon_label.setCursor(Qt.PointingHandCursor)
         self.tableWidget.setCellWidget(play_list.get_current_index(), 0, icon_label)
+        # 当行数等于13时, maximum=0, row=14->maximum = 1, row=15->maximum=2, row=16->maximum=3
+        # 15-27
+        # print("table widget height: ", self.tableWidget.height())
+        # print("height: ", self.tableWidget.verticalScrollBar().height())
+        # print("maximum: ", self.tableWidget.verticalScrollBar().maximum())
+        # print("value:", self.tableWidget.verticalScrollBar().value())
+        # print("position:", self.tableWidget.verticalScrollBar().sliderPosition())
+        # self.tableWidget.verticalScrollBar().setSliderPosition(self.tableWidget.verticalScrollBar().maximum() / 2)
 
-        # 隔行变色
-        b1 = QBrush(QColor("#fafafa"))
-        b2 = QBrush(QColor("#f5f5f7"))
-        for i in range(self.tableWidget.rowCount()):
-            if i % 2 == 0:
-                for j in range(self.tableWidget.columnCount()):
-                    if self.tableWidget.item(i, j) is not None:
-                        self.tableWidget.item(i, j).setBackground(b1)
-            else:
-                for j in range(self.tableWidget.columnCount()):
-                    if self.tableWidget.item(i, j) is not None:
-                        self.tableWidget.item(i, j).setBackground(b2)
+    def eventFilter(self, QObject, QEvent):
+        # print(self.btn_link == QObject)
+        return super().eventFilter(QObject, QEvent)
 
     def paintEvent(self, QPaintEvent):
         # 画出边框线
@@ -231,3 +233,9 @@ class PlayListPage(QWidget, Ui_Form):
         paint.setPen(pen)
         paint.drawLine(0, 0, self.width(), 0)
         paint.drawLine(0, 0, 0, self.tabWidget.tabBar().height())
+
+        # 画出头部背景
+        brush = QtGui.QBrush(QColor("#f4f4f6"))
+        brush.setStyle(Qt.SolidPattern)
+        paint.setBrush(brush)
+        paint.drawRect(0, 0, self.width(), self.tabWidget.tabBar().height())

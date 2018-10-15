@@ -7,6 +7,8 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from tablewidget import TableWidget
+
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -176,8 +178,9 @@ class Ui_Form(object):
         spacerItem5 = QtWidgets.QSpacerItem(20, 128, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout_5.addItem(spacerItem5, 2, 6, 1, 1)
         self.line = QtWidgets.QFrame(self.widget_2)
-        self.line.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(225, 225, 226, 255), stop:1 rgba(255, 255, 255, 255));\n"
-"color: rgb(225, 225, 226);")
+        self.line.setStyleSheet(
+            "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(225, 225, 226, 255), stop:1 rgba(255, 255, 255, 255));\n"
+            "color: rgb(225, 225, 226);")
         self.line.setFrameShadow(QtWidgets.QFrame.Raised)
         self.line.setFrameShape(QtWidgets.QFrame.VLine)
         self.line.setObjectName("line")
@@ -226,7 +229,7 @@ class Ui_Form(object):
         self.music_list_search.setObjectName("music_list_search")
         self.gridLayout_6.addWidget(self.music_list_search, 2, 2, 1, 1)
         self.gridLayout_3.addWidget(self.widget_2, 0, 0, 1, 1)
-        self.musics = QtWidgets.QTableWidget(self.music_list_detail)
+        self.musics = TableWidget(self.music_list_detail)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -296,7 +299,7 @@ class Ui_Form(object):
         spacerItem12 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem12)
         self.gridLayout_8.addWidget(self.widget, 0, 0, 1, 1)
-        self.tb_local_music = QtWidgets.QTableWidget(self.local_music_page)
+        self.tb_local_music = TableWidget(self.local_music_page)
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(False)
@@ -394,7 +397,7 @@ class Ui_Form(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 98, 39))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 81, 39))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.gridLayout = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout.setContentsMargins(0, 20, 0, 0)
@@ -409,7 +412,7 @@ class Ui_Form(object):
         self.label_lyric.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.label_lyric.setText("")
         self.label_lyric.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_lyric.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.TextSelectableByMouse)
+        self.label_lyric.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByMouse)
         self.label_lyric.setObjectName("label_lyric")
         self.gridLayout.addWidget(self.label_lyric, 0, 0, 1, 1)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
@@ -430,7 +433,7 @@ class Ui_Form(object):
         self.footer.setMaximumSize(QtCore.QSize(16777215, 48))
         self.footer.setObjectName("footer")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.footer)
-        self.horizontalLayout_2.setContentsMargins(22, 0, 6, 0)
+        self.horizontalLayout_2.setContentsMargins(22, 0, 14, 0)
         self.horizontalLayout_2.setSpacing(0)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.btn_previous = QtWidgets.QPushButton(self.footer)
@@ -516,8 +519,8 @@ class Ui_Form(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btn_play_mode.sizePolicy().hasHeightForWidth())
         self.btn_play_mode.setSizePolicy(sizePolicy)
-        self.btn_play_mode.setMinimumSize(QtCore.QSize(18, 18))
-        self.btn_play_mode.setMaximumSize(QtCore.QSize(18, 18))
+        self.btn_play_mode.setMinimumSize(QtCore.QSize(18, 14))
+        self.btn_play_mode.setMaximumSize(QtCore.QSize(18, 14))
         self.btn_play_mode.setText("")
         self.btn_play_mode.setObjectName("btn_play_mode")
         self.horizontalLayout_2.addWidget(self.btn_play_mode)
@@ -529,8 +532,8 @@ class Ui_Form(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btn_desktop_lyric.sizePolicy().hasHeightForWidth())
         self.btn_desktop_lyric.setSizePolicy(sizePolicy)
-        self.btn_desktop_lyric.setMinimumSize(QtCore.QSize(22, 22))
-        self.btn_desktop_lyric.setMaximumSize(QtCore.QSize(22, 22))
+        self.btn_desktop_lyric.setMinimumSize(QtCore.QSize(16, 16))
+        self.btn_desktop_lyric.setMaximumSize(QtCore.QSize(16, 16))
         self.btn_desktop_lyric.setText("")
         self.btn_desktop_lyric.setObjectName("btn_desktop_lyric")
         self.horizontalLayout_2.addWidget(self.btn_desktop_lyric)
@@ -542,18 +545,19 @@ class Ui_Form(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btn_play_list.sizePolicy().hasHeightForWidth())
         self.btn_play_list.setSizePolicy(sizePolicy)
-        self.btn_play_list.setMinimumSize(QtCore.QSize(14, 14))
-        self.btn_play_list.setMaximumSize(QtCore.QSize(14, 14))
+        self.btn_play_list.setMinimumSize(QtCore.QSize(19, 17))
+        self.btn_play_list.setMaximumSize(QtCore.QSize(19, 17))
         self.btn_play_list.setText("")
         self.btn_play_list.setObjectName("btn_play_list")
         self.horizontalLayout_2.addWidget(self.btn_play_list)
         self.label_play_count = QtWidgets.QLabel(self.footer)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_play_count.sizePolicy().hasHeightForWidth())
         self.label_play_count.setSizePolicy(sizePolicy)
-        self.label_play_count.setMaximumSize(QtCore.QSize(16777215, 14))
+        self.label_play_count.setMinimumSize(QtCore.QSize(30, 16))
+        self.label_play_count.setMaximumSize(QtCore.QSize(30, 16))
         self.label_play_count.setText("")
         self.label_play_count.setObjectName("label_play_count")
         self.horizontalLayout_2.addWidget(self.label_play_count)
@@ -561,17 +565,17 @@ class Ui_Form(object):
 
         self.retranslateUi(Form)
         self.main_stacked_widget.setCurrentIndex(0)
-        self.stackedWidget_2.setCurrentIndex(1)
+        self.stackedWidget_2.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
         self.music_count.setText(_translate("Form", "歌曲数\n"
-"7"))
+                                                    "7"))
         self.music_list_image.setText(_translate("Form", "TextLabel"))
         self.music_list_play_count.setText(_translate("Form", "播放数\n"
-"78"))
+                                                              "78"))
         self.music_list_name.setText(_translate("Form", "TextLabel"))
         self.music_list_date.setText(_translate("Form", "2018-12-12创建"))
         self.label_4.setText(_translate("Form", "歌曲列表"))
@@ -583,4 +587,3 @@ class Ui_Form(object):
         self.label_album.setText(_translate("Form", "album"))
         self.label_pos.setText(_translate("Form", "00:00"))
         self.label_duration.setText(_translate("Form", "00:00"))
-

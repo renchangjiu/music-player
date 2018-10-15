@@ -67,6 +67,10 @@ class PlayList(QObject):
         if index < self.__current_index:
             self.__current_index -= 1
 
+    def clear(self):
+        self.__musics = list()
+        self.__current_index = -1
+
     def contains(self, path):
         for music in self.__musics:
             if music.get_path() == path:
@@ -129,4 +133,4 @@ class PlayList(QObject):
             ret += "]"
             return ret
         else:
-            return "PlayerList[None]"
+            return "PlayerList[Empty]"

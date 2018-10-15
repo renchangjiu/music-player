@@ -20,6 +20,7 @@ from ui.play_list_page import PlayListPage
 import util
 from search_local_music import SearchLocalMusic
 
+# TODO 播放列表页(右键菜单 & 点击链接图片跳转的对应的歌单)
 # TODO 自动滚动到当前播放音乐所在行: verticalScrollBar.setValue()
 # todo tablewidget 列宽可调节
 # TODO UI细节调整
@@ -148,28 +149,9 @@ class MyWindow(QWidget, Ui_Form):
 
     def init_table_widget_ui(self):
         # --------------------- 1. 歌单音乐列表UI --------------------- #
-        # 隐藏默认行号
-        self.musics.verticalHeader().setHidden(True)
-        # 按住Ctrl or shift选择
-        self.musics.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.musics.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.musics.setHorizontalHeaderLabels(["", "音乐标题", "歌手", "专辑", "时长"])
         self.musics.setColumnCount(5)
-        self.musics.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        # 解决表头塌陷
-        self.musics.horizontalHeader().setHighlightSections(False)
-        # 设置整行选中
-        self.musics.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.musics.setShowGrid(False)  # 设置不显示格子线
-        self.musics.setFocusPolicy(Qt.NoFocus)  # 去除选中虚线框
-        self.musics.setMouseTracking(True)
-        # 设置垂直滚动条样式
-        self.musics.verticalScrollBar().setStyleSheet("QScrollBar{background:#fafafa; width: 8px;}"
-                                                      "QScrollBar::handle{background:#e1e1e2; border-radius:4px;}"
-                                                      "QScrollBar::handle:hover{background:#cfcfd1;}"
-                                                      "QScrollBar::sub-line{none;}"
-                                                      "QScrollBar::add-line{background:transparent;}")
-        self.musics.setStyleSheet("QTableWidget{border:none}" +
+        self.musics.setStyleSheet("QTableWidget{border:none;background:#fafafa;}" +
                                   "QTableWidget::item::selected{background:#e3e3e5}")
         # 设置表头
         self.musics.horizontalHeader().setStyleSheet(
@@ -178,28 +160,9 @@ class MyWindow(QWidget, Ui_Form):
             QHeaderView{color:#666666; border-top:1px solid #c62f2f;}
             """)
 
-        # 隐藏横向滚动条
-        self.musics.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # 更改右键策略
-        self.musics.setContextMenuPolicy(Qt.CustomContextMenu)
-
         # --------------------- 2. 本地音乐页面UI--------------------- #
-        self.tb_local_music.verticalHeader().setHidden(True)
-        self.tb_local_music.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.tb_local_music.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.tb_local_music.setColumnCount(6)
         self.tb_local_music.setHorizontalHeaderLabels(["", "音乐标题", "歌手", "专辑", "时长", "大小"])
-        self.tb_local_music.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        self.tb_local_music.horizontalHeader().setHighlightSections(False)
-        self.tb_local_music.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tb_local_music.setShowGrid(False)  # 设置不显示格子线
-        self.tb_local_music.setFocusPolicy(Qt.NoFocus)  # 去除选中虚线框
-        self.tb_local_music.setMouseTracking(True)
-        self.tb_local_music.verticalScrollBar().setStyleSheet("QScrollBar{background:#fafafa; width: 10px;}"
-                                                              "QScrollBar::handle{background:#e1e1e2; border:2px solid transparent; border-radius:5px;}"
-                                                              "QScrollBar::handle:hover{background:#cfcfd1;}"
-                                                              "QScrollBar::sub-line{background:transparent;}"
-                                                              "QScrollBar::add-line{background:transparent;}")
         self.tb_local_music.setStyleSheet("QTableWidget{border:none}" +
                                           "QTableWidget::item::selected{background:#e3e3e5}")
         # 设置表头
@@ -208,8 +171,6 @@ class MyWindow(QWidget, Ui_Form):
             QHeaderView::section:hover{background:#eceeed;border:none;}
             QHeaderView{color:#666666; border-top:1px solid #e1e1e2;}
             """)
-        self.tb_local_music.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.tb_local_music.setContextMenuPolicy(Qt.CustomContextMenu)
 
     # 当点击navigation时, 显示对应页面
     def on_nav_clicked(self, QListWidgetItem_):
@@ -229,7 +190,7 @@ class MyWindow(QWidget, Ui_Form):
             self.show_icon_item()
             self.musics.setCurrentCell(0, 0)
 
-    # 将歌单中的歌曲列表加载到 table widget(需先设置列数)
+    # 将歌单中的歌曲列表加载到 table widget(需先设置行列数)
     def show_musics_data(self):
         self.music_list_name.setText(self.cur_music_list.get_name())
         self.music_list_date.setText("%s创建" % self.cur_music_list.get_date())
@@ -250,33 +211,6 @@ class MyWindow(QWidget, Ui_Form):
             self.musics.setItem(i, 2, QTableWidgetItem(str(music.get_artist())))
             self.musics.setItem(i, 3, QTableWidgetItem(str(music.get_album())))
             self.musics.setItem(i, 4, QTableWidgetItem(str(util.format_time(music.get_duration()))))
-        self.interlaced_discoloration()
-
-    # 隔行变色(注: 需要先把数据填充到表格)
-    def interlaced_discoloration(self):
-        b1 = QBrush(QColor("#fafafa"))
-        b2 = QBrush(QColor("#f5f5f7"))
-        # 对歌单音乐列表
-        if self.stackedWidget_2.currentWidget() == self.music_list_detail:
-            for i in range(self.musics.rowCount()):
-                if i % 2 == 0:
-                    for j in range(self.musics.columnCount()):
-                        if self.musics.item(i, j) is not None:
-                            self.musics.item(i, j).setBackground(b1)
-                else:
-                    for j in range(self.musics.columnCount()):
-                        if self.musics.item(i, j) is not None:
-                            self.musics.item(i, j).setBackground(b2)
-        elif self.stackedWidget_2.currentWidget() == self.local_music_page:
-            for i in range(self.tb_local_music.rowCount()):
-                if i % 2 == 0:
-                    for j in range(self.tb_local_music.columnCount()):
-                        if self.tb_local_music.item(i, j) is not None:
-                            self.tb_local_music.item(i, j).setBackground(b1)
-                else:
-                    for j in range(self.tb_local_music.columnCount()):
-                        if self.tb_local_music.item(i, j) is not None:
-                            self.tb_local_music.item(i, j).setBackground(b2)
 
     def show_local_music_page(self):
         self.stackedWidget_2.setCurrentWidget(self.local_music_page)
@@ -300,7 +234,6 @@ class MyWindow(QWidget, Ui_Form):
             self.tb_local_music.setItem(i, 3, QTableWidgetItem(str(music.get_album())))
             self.tb_local_music.setItem(i, 4, QTableWidgetItem(str(util.format_time(music.get_duration()))))
             self.tb_local_music.setItem(i, 5, QTableWidgetItem(str(music.get_size())))
-        self.interlaced_discoloration()
 
     def set_musics_layout(self):
         self.musics.setColumnWidth(0, self.musics.width() * 0.06)
@@ -341,7 +274,9 @@ class MyWindow(QWidget, Ui_Form):
 
     # 显示左下音乐名片相关信息
     def show_music_info(self):
-        if self.cur_play_list.get_music_count() > 0:
+        if self.cur_play_list.size() > 0:
+            if self.music_info_widget.isHidden():
+                self.music_info_widget.show()
             music = self.cur_play_list.get_current_music()
             image_data = MP3(music.get_path()).image
             if image_data == b"":
@@ -355,6 +290,8 @@ class MyWindow(QWidget, Ui_Form):
 
             self.label_music_title.setText(self.get_elided_text(self.label_music_title.font(), title, max_width))
             self.label_music_artist.setText(self.get_elided_text(self.label_music_artist.font(), artist, max_width))
+        else:
+            self.music_info_widget.hide()
 
     def init_button(self):
         self.btn_previous.setStyleSheet("QPushButton{border-image:url(./resource/image/上一首.png)}" +
@@ -379,8 +316,8 @@ class MyWindow(QWidget, Ui_Form):
                                          "QPushButton:hover{border-image:url(./resource/image/播放列表2.png)}")
 
         self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
-        self.label_play_count.setStyleSheet("QLabel{color: #333333; background-color: #e1e1e2;border-width:1;" +
-                                            "border-color:#e1e1e2; border-style: solid; border-radius: 7px;}")
+        self.label_play_count.setStyleSheet("QLabel{color:#333333; background-color: #e1e1e2;border-width:1;" +
+                                            "border-color:#e1e1e2; border-style:solid; border-top-right-radius:7px;border-bottom-right-radius:7px;}")
 
         self.btn_previous.setCursor(Qt.PointingHandCursor)
         self.btn_next.setCursor(Qt.PointingHandCursor)
@@ -424,7 +361,7 @@ class MyWindow(QWidget, Ui_Form):
         self.cur_play_list.current_music_change.connect(self.on_cur_play_list_change)
 
         # musics
-        self.musics.cellEntered.connect(self.ch_hover_color)
+        # self.musics.cellEntered.connect(self.ch_hover_color)
         self.music_list_search.textChanged.connect(self.on_search)
         self.musics.doubleClicked.connect(self.on_tb_double_clicked)
         self.musics.customContextMenuRequested.connect(self.on_musics_right_click)
@@ -434,34 +371,28 @@ class MyWindow(QWidget, Ui_Form):
 
         # 本地音乐页面
         self.le_search_local_music.textChanged.connect(self.on_search)
-        self.tb_local_music.doubleClicked.connect(self.on_tb_double_clicked)
-        self.tb_local_music.cellEntered.connect(self.on_table_cell_entered)
-        self.tb_local_music.customContextMenuRequested.connect(self.on_tb_local_music_right_click)  # 右键菜单
+        # self.tb_local_music.cellEntered.connect(self.on_table_cell_entered)
         self.btn_choose_dir.clicked.connect(self.show_choose_music_dir_page)
+        self.tb_local_music.doubleClicked.connect(self.on_tb_double_clicked)
+        self.tb_local_music.customContextMenuRequested.connect(self.on_tb_local_music_right_click)  # 右键菜单
+
+        # 播放列表页面
+        self.play_list_page.pushButton_2.clicked.connect(self.on_clear_clicked)
+
+    # 当点击了播放列表页的清空按钮
+    def on_clear_clicked(self):
+        self.cur_play_list.clear()
+        self.play_list_page.show_data(self.cur_play_list)
+        self.music_info_widget.hide()
+        self.stop_current()
+        self.btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/播放.png)}" +
+                                     "QPushButton:hover{border-image:url(./resource/image/播放2.png)}")
 
     def init_shortcut(self):
         pause_play_act = QAction(self)
         pause_play_act.setShortcut(Qt.Key_Space)
         self.addAction(pause_play_act)
         pause_play_act.triggered.connect(self.play_pause)
-
-    # 歌单音乐的鼠标滑过变色
-    def ch_hover_color(self, row):
-        # 先重设全部背景色
-        self.interlaced_discoloration()
-        # 再设置当前行的颜色
-        brush = QBrush(QColor("#ebeced"))
-        for i in range(5):
-            self.musics.item(row, i).setBackground(brush)
-
-    # 本地音乐的鼠标滑过变色
-    def on_table_cell_entered(self, row):
-        # 先重设全部背景色
-        self.interlaced_discoloration()
-        # 再设置当前行的颜色
-        brush = QBrush(QColor("#ebeced"))
-        for i in range(5):
-            self.tb_local_music.item(row, i).setBackground(brush)
 
     def eventFilter(self, _QObject, _QEvent):
         if _QEvent.type() == QEvent.MouseButtonPress:
@@ -653,7 +584,7 @@ class MyWindow(QWidget, Ui_Form):
         self.slider_volume.setValue(self.volume)
         self.slider_volume.setCursor(Qt.PointingHandCursor)
         self.footer.setStyleSheet(
-            "QWidget{background-color:#f6f6f8; border:none;outline:0px;border-top:1px solid #e1e1e2}")
+            "QWidget{background-color:#f6f6f8; border:none;outline:0px;border-top:1px solid #e1e1e2;}")
         self.slider_progress.setStyleSheet("QSlider::groove:horizontal{border:0px;height:4px;}"
                                            "QSlider::sub-page:horizontal{background:#e83c3c;}"
                                            "QSlider::add-page:horizontal{background:#c2c2c4;} "
@@ -1015,6 +946,7 @@ class MyWindow(QWidget, Ui_Form):
             # todo 本地音乐页面的喇叭图标
             pass
             # self.show_local_music_page_data()
+        # 同步更新播放列表页的数据
         if self.cur_play_list is not None:
             self.play_list_page.show_data(self.cur_play_list)
 
@@ -1031,10 +963,9 @@ class MyWindow(QWidget, Ui_Form):
         self.cur_music_list = SearchLocalMusic.get_exist_result()
         self.cur_whole_music_list = SearchLocalMusic.get_exist_result()
         self.show_local_music_page_data()
-        self.interlaced_discoloration()
 
     def play_pause(self):
-        if self.cur_play_list is not None:
+        if self.cur_play_list is not None and self.cur_play_list.size() > 0:
             if self.state == self.stopped_state:
                 self.play()
                 self.btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/暂停.png)}" +
@@ -1176,7 +1107,7 @@ class MyWindow(QWidget, Ui_Form):
             print("!" * 10 + "error output end")
 
     def previous_music(self):
-        if self.cur_play_list is not None:
+        if self.cur_play_list is not None and self.cur_play_list.size() > 0:
             self.info_reset()
             self.stop_current()
             self.cur_play_list.previous()
@@ -1187,7 +1118,7 @@ class MyWindow(QWidget, Ui_Form):
                     self.process.write(b"mute 1\n")
 
     def next_music(self):
-        if self.cur_play_list is not None:
+        if self.cur_play_list is not None and self.cur_play_list.size() > 0:
             self.info_reset()
             self.stop_current()
             self.cur_play_list.next()
@@ -1220,7 +1151,7 @@ class MyWindow(QWidget, Ui_Form):
                                         "QPushButton:hover{border-image:url(./resource/image/取消静音2.png)}")
             self.is_mute = True
 
-    def closeEvent(self, QCloseEvent):
+    def closeEvent(self, QCloseEvent_):
         self.stop_current()
 
 
