@@ -42,9 +42,6 @@ class PlayList(QObject):
     def insert_music(self, index, music):
         self.__musics.insert(index, music)
 
-    def get_music_count(self):
-        return len(self.__musics)
-
     def size(self):
         return len(self.__musics)
 
@@ -62,9 +59,12 @@ class PlayList(QObject):
             if index <= self.__current_index:
                 self.__current_index -= 1
 
-    def remove_2(self, index):
+    # 根据索引删除
+    def __remove_2(self, index):
+        print(index)
         self.__musics.pop(index)
         if index < self.__current_index:
+            print("<")
             self.__current_index -= 1
 
     def clear(self):
@@ -106,7 +106,7 @@ class PlayList(QObject):
     def next(self):
         if self.get_play_mode() == self.loop_mode:
             # 如果索引是play_list 的最后一项, 则置索引为0
-            if self.__current_index == self.get_music_count() - 1:
+            if self.__current_index == self.size() - 1:
                 self.__current_index = 0
             else:
                 self.__current_index += 1
@@ -116,14 +116,14 @@ class PlayList(QObject):
         if self.get_play_mode() == self.loop_mode:
             # 如果索引是play_list 的第一项, 则置索引为length-1(即最后一项)
             if self.__current_index == 0:
-                self.__current_index = self.get_music_count() - 1
+                self.__current_index = self.size() - 1
             else:
                 self.__current_index -= 1
             self.current_music_change.emit(self.get_current_music())
 
     def __str__(self):
         if len(self.__musics) != 0:
-            ret = "PlayerList %d [" % self.get_music_count()
+            ret = "PlayerList %d [" % self.size()
             for i in range(len(self.__musics)):
                 ret += "\t"
                 ret += self.__musics[i].get_path()

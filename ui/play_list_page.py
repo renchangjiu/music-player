@@ -1,9 +1,7 @@
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, QTimer, QProcess, QEvent, QSize, QPointF
-from PyQt5.QtGui import QPixmap, QBrush, QFont, QColor, QIcon, QImage, QFontMetrics, QCursor, QLinearGradient, \
-    QGradient, QPainter, QPen
-from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QAbstractItemView, QListWidgetItem, QTableWidgetItem, \
-    QAction, QMenu, QLabel
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap, QColor, QIcon, QCursor, QPainter, QPen
+from PyQt5.QtWidgets import QWidget, QTableWidgetItem, \
+    QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import util
@@ -136,11 +134,81 @@ class PlayListPage(QWidget, Ui_Form):
 
     def init_connect(self):
         self.tableWidget.cellPressed.connect(self.open_music_list)
+        self.tableWidget.customContextMenuRequested.connect(self.on_right_click)
+        self.tableWidget.doubleClicked.connect(self.on_tb_double_clicked)
+
+    # 当存放音乐列表的表格被双击
+    def on_tb_double_clicked(self, QModelIndex_):
+        index = QModelIndex_.row()
+        self.parent().cur_play_list.set_current_index(index)
+        self.parent().label_play_count.setText(str(self.parent().cur_play_list.size()))
+        self.parent().stop_current()
+        self.parent().play()
+        self.tableWidget.selectRow(index)
+
+        if self.parent().is_mute:
+            self.parent().process.write(b"mute 1\n")
+        self.parent().btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/暂停.png)}" +
+                                              "QPushButton:hover{border-image:url(./resource/image/暂停2.png)}")
+        # 读取音乐名片
+        self.parent().show_music_info()
+        self.parent().state = self.parent().playing_state
 
     def open_music_list(self, row, column):
         pass
-        print(row)
+        # print(row)
         # print(column)
+
+    def on_right_click(self):
+        self.play_list_menu.clear()
+        act1 = self.create_widget_action("./resource/image/nav-播放.png", "播放(Enter)")
+        act2 = QAction("收藏到歌单(Ctrl+S)", self)
+        act3 = self.create_widget_action("./resource/image/打开文件.png", "打开文件所在目录")
+        act4 = self.create_widget_action("./resource/image/删除.png", "从列表中删除(Delete)")
+        self.play_list_menu.addAction(act1)
+        self.play_list_menu.addAction(act2)
+
+        # 获取被选中的行, 包括列
+        items = self.tableWidget.selectedItems()
+        # 被选中的行号
+        rows = set()
+        for item in items:
+            rows.add(item.row())
+        musics = []
+        for row in rows:
+            music = self.parent().cur_play_list.get(row)
+            musics.append(music)
+        # 设置子菜单归属于act2
+        self.create_collect_menu(rows)
+        act2.setMenu(self.collect_menu)
+        self.play_list_menu.addMenu(self.collect_menu)
+        # 只选中了一行
+        if len(rows) == 1:
+            self.play_list_menu.addAction(act3)
+
+        self.play_list_menu.addSeparator()
+        self.play_list_menu.addAction(act4)
+        act1.triggered.connect(lambda: self.parent().on_act_play(musics))
+        act3.triggered.connect(lambda: self.parent().on_act_open_file(musics))
+        act4.triggered.connect(lambda: self.on_act_del(musics))
+        self.play_list_menu.exec(QCursor.pos())
+
+    def on_act_del(self, musics):
+        for music in musics:
+            self.parent().cur_play_list.remove(music)
+        self.show_data(self.parent().cur_play_list)
+        self.parent().label_play_count.setText(str(self.parent().cur_play_list.size()))
+
+    def create_collect_menu(self, rows):
+        self.collect_menu.clear()
+        act0 = self.create_widget_action("./resource/image/添加歌单.png", "创建新歌单")
+        self.collect_menu.addAction(act0)
+        self.collect_menu.addSeparator()
+        music_lists = util.get_music_lists()
+        for music_list in music_lists:
+            act = self.create_widget_action("./resource/image/歌单.png", music_list.get_name())
+            self.collect_menu.addAction(act)
+            act.triggered.connect(lambda: self.parent().on_acts_choose(rows))
 
     def __init_ui(self):
         self.setWindowFlag(Qt.FramelessWindowHint)
@@ -163,6 +231,22 @@ class PlayListPage(QWidget, Ui_Form):
         self.pushButton_2.setStyleSheet("QPushButton{color:#666666;border:none;}QPushButton:hover{color:#444444;}")
         self.pushButton.setCursor(Qt.PointingHandCursor)
         self.pushButton_2.setCursor(Qt.PointingHandCursor)
+
+        # 播放列表右键菜单
+        self.play_list_menu = QMenu()
+        # 鼠标移到收藏到歌单时的二级菜单
+        self.collect_menu = QMenu()
+
+        self.play_list_menu.setStyleSheet(
+            "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
+            "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
+            "QMenu::item:selected {background-color:#ededef;}" +
+            "QMenu::separator{background-color:#ededef;height:1px}")
+        self.collect_menu.setStyleSheet(
+            "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
+            "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
+            "QMenu::item:selected {background-color:#ededef;}" +
+            "QMenu::separator{background-color:#ededef;height:1px}")
 
     def __init_table_widget_ui(self):
         self.tableWidget.setColumnCount(5)
@@ -220,8 +304,34 @@ class PlayListPage(QWidget, Ui_Form):
         # print("position:", self.tableWidget.verticalScrollBar().sliderPosition())
         # self.tableWidget.verticalScrollBar().setSliderPosition(self.tableWidget.verticalScrollBar().maximum() / 2)
 
+    def create_widget_action(self, icon, text):
+        act = QWidgetAction(self)
+        act.setText(text)
+        widget = QWidget(self)
+        layout = QHBoxLayout()
+        layout.setContentsMargins(13, -1, -1, 11)
+        layout.setSpacing(13)
+        lb_icon = QLabel(widget)
+        lb_icon.resize(18, 18)
+        lb_text = QLabel(text, widget)
+        if icon != "":
+            lb_icon.setPixmap(QPixmap(icon))
+        widget.setStyleSheet("QWidget:hover{background:#ededef}" + ""
+                                                                   "QWidget{color:#000000;font-size:13px;}")
+        layout.addWidget(lb_icon)
+        layout.addWidget(lb_text)
+        layout.addStretch()
+        widget.setLayout(layout)
+        act.setDefaultWidget(widget)
+        return act
+
     def eventFilter(self, QObject, QEvent):
         # print(self.btn_link == QObject)
+        if self.btn_link == QObject:
+            item = self.tableWidget.currentItem()
+            if item is not None:
+                pass
+                # print(item.row())
         return super().eventFilter(QObject, QEvent)
 
     def paintEvent(self, QPaintEvent):

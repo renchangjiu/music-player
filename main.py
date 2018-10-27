@@ -220,6 +220,7 @@ class MyWindow(QWidget, Ui_Form):
 
     def show_local_music_page_data(self):
         self.label_2.setText("%d首音乐" % self.cur_whole_music_list.size())
+        print(132)
         self.tb_local_music.clearContents()
         self.tb_local_music.setRowCount(self.cur_music_list.size())
         self.set_tb_local_music_layout()
@@ -259,7 +260,7 @@ class MyWindow(QWidget, Ui_Form):
         # 找到被双击的音乐在 cur_whole_music_list 中的索引
         music_index = self.cur_whole_music_list.index_of(self.cur_music_list.get(index))
         self.cur_play_list.set_current_index(music_index)
-        self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
+        self.label_play_count.setText(str(self.cur_play_list.size()))
         self.stop_current()
         self.play()
         self.musics.selectRow(index)
@@ -315,7 +316,7 @@ class MyWindow(QWidget, Ui_Form):
         self.btn_play_list.setStyleSheet("QPushButton{border-image:url(./resource/image/播放列表.png)}" +
                                          "QPushButton:hover{border-image:url(./resource/image/播放列表2.png)}")
 
-        self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
+        self.label_play_count.setText(str(self.cur_play_list.size()))
         self.label_play_count.setStyleSheet("QLabel{color:#333333; background-color: #e1e1e2;border-width:1;" +
                                             "border-color:#e1e1e2; border-style:solid; border-top-right-radius:7px;border-bottom-right-radius:7px;}")
 
@@ -644,16 +645,18 @@ class MyWindow(QWidget, Ui_Form):
         self.le_search_local_music.addAction(self.search_act_2, QLineEdit.TrailingPosition)
 
     def init_menu(self):
-        # 导航栏右键菜单
+        # 1. 导航栏右键菜单
         self.nav_menu = QMenu()
 
-        # 在音乐列表上右键的菜单
+        # 2. 在音乐列表上右键的菜单
         self.musics_menu = QMenu()
 
-        # 鼠标移到收藏到歌单时的菜单
+        # 3. 鼠标移到收藏到歌单时的二级菜单
         self.collect_menu = QMenu()
-        # 本地音乐右键菜单
+
+        # 4. 本地音乐右键菜单
         self.lm_menu = QMenu()
+
         self.nav_menu.setStyleSheet(
             "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
             "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
@@ -752,13 +755,17 @@ class MyWindow(QWidget, Ui_Form):
         self.musics_menu.addAction(act3)
         # 获取被选中的行, 包括列
         items = self.musics.selectedItems()
-        # 被选中的行号
+        # 去重, 获取被选中的行号
         rows = set()
         for item in items:
             rows.add(item.row())
-
+        # 被选中的音乐
+        musics = []
+        for row in rows:
+            music = self.cur_music_list.get(row)
+            musics.append(music)
         # 设置子菜单归属于act3
-        self.create_collect_menu(rows)
+        self.create_collect_menu(musics)
         act3.setMenu(self.collect_menu)
         self.musics_menu.addMenu(self.collect_menu)
         # 只选中了一行
@@ -768,26 +775,26 @@ class MyWindow(QWidget, Ui_Form):
         else:
             self.musics_menu.addSeparator()
         self.musics_menu.addAction(act5)
-        act1.triggered.connect(lambda: self.on_act1_play(rows))
-        act2.triggered.connect(lambda: self.on_act2_next_play(rows))
-        act4.triggered.connect(lambda: self.on_act4_open_file(rows))
-        act5.triggered.connect(lambda: self.on_act5_del(rows))
+        act1.triggered.connect(lambda: self.on_act_play(musics))
+        act2.triggered.connect(lambda: self.on_act_next_play(musics))
+        act4.triggered.connect(lambda: self.on_act_open_file(musics))
+        act5.triggered.connect(lambda: self.on_act_del(musics))
         self.musics_menu.exec(QCursor.pos())
 
     # 选中歌单列表的音乐, 点击 "播放"
-    def on_act1_play(self, rows):
-        # 1. 选中的音乐依次在current index后加入播放列表
-        # 2. 若选中的音乐已在播放列表中, 则移除已存在的, 然后重新加入
+    def on_act_play(self, musics):
+        # 1. 若选中的音乐已在播放列表中, 则移除已存在的, 然后重新加入
+        # 2. 选中的音乐依次在current index后加入播放列表
         # 3. 播放第一个选中的音乐
-        for row in rows:
-            music = self.cur_music_list.get(row)
+        for music in musics:
+            print(music)
             self.cur_play_list.remove(music)
         cur_index = self.cur_play_list.get_current_index()
-        for row in rows:
-            music = self.cur_music_list.get(row)
+        for music in musics:
             cur_index += 1
             self.cur_play_list.insert_music(cur_index, music)
-        self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
+
+        self.label_play_count.setText(str(self.cur_play_list.size()))
         self.cur_play_list.set_current_index(self.cur_play_list.get_current_index() + 1)
         self.stop_current()
         self.play()
@@ -799,20 +806,19 @@ class MyWindow(QWidget, Ui_Form):
         self.show_music_info()
 
     # 选中歌单列表的音乐, 点击 "下一首播放"
-    def on_act2_next_play(self, rows):
-        # 1. 选中的音乐依次在current index后加入播放列表
-        # 2. 若选中的音乐已在播放列表中, 则移除已存在的, 然后重新加入
-        for row in rows:
-            music = self.cur_music_list.get(row)
+    def on_act_next_play(self, musics):
+        # 1. 若选中的音乐已在播放列表中, 则移除已存在的, 然后重新加入
+        # 2. 选中的音乐依次在current index后加入播放列表
+        for music in musics:
             self.cur_play_list.remove(music)
         cur_index = self.cur_play_list.get_current_index()
-        for row in rows:
-            music = self.cur_music_list.get(row)
+        for music in musics:
             cur_index += 1
             self.cur_play_list.insert_music(cur_index, music)
-        self.label_play_count.setText(str(self.cur_play_list.get_music_count()))
 
-    def create_collect_menu(self, rows):
+        self.label_play_count.setText(str(self.cur_play_list.size()))
+
+    def create_collect_menu(self, musics):
         self.collect_menu.clear()
         act0 = self.create_widget_action("./resource/image/添加歌单.png", "创建新歌单")
         self.collect_menu.addAction(act0)
@@ -821,16 +827,15 @@ class MyWindow(QWidget, Ui_Form):
         for music_list in music_lists:
             act = self.create_widget_action("./resource/image/歌单.png", music_list.get_name())
             self.collect_menu.addAction(act)
-            act.triggered.connect(lambda: self.on_acts_choose(rows))
+            act.triggered.connect(lambda: self.on_acts_choose(musics))
 
-    def on_acts_choose(self, rows):
+    def on_acts_choose(self, musics):
         # 1. 在目标歌单的末尾加入; 2. 已存在的音乐则不加入(根据path判断)
         sender = self.sender()
         music_list_name = sender.text()
         target_music_list = MusicList.from_disk("%s%s" % (glo_var.music_list_path, music_list_name))
         is_all_in = True
-        for row in rows:
-            music = self.cur_music_list.get(row)
+        for music in musics:
             if not target_music_list.contains(music.get_path()):
                 is_all_in = False
                 target_music_list.add(music)
@@ -841,33 +846,33 @@ class MyWindow(QWidget, Ui_Form):
         MusicList.to_disk(target_music_list)
 
     # 选中歌单列表的音乐, 点击 "打开文件所在目录"
-    def on_act4_open_file(self, rows):
-        if len(rows) == 1:
-            music = self.cur_music_list.get(rows.pop())
+    def on_act_open_file(self, musics):
+        if len(musics) == 1:
+            music = musics[0]
             command = "explorer /select, %s" % music.get_path().replace("/", "\\")
             os.system(command)
 
     # 选中歌单列表的音乐, 点击 "从歌单中删除"
-    def on_act5_del(self, rows):
-        dels = []
-        for row in rows:
-            music = self.cur_music_list.get(row)
-            dels.append(music)
-        for del_music in dels:
-            self.cur_music_list.remove(del_music)
+    def on_act_del(self, musics):
+        for music in musics:
+            self.cur_music_list.remove(music)
         MusicList.to_disk(self.cur_music_list)
         self.show_musics_data()
         # 清除已选择的项
         self.musics.clearSelection()
 
-    def on_act5_del_from_disk(self, rows):
-        if 1 == 0:
-            for row in rows:
-                music = self.cur_local_music_list.get(row)
-                os.remove(music.get_path())
-            self.show_local_music_page_data()
-            # 清除已选择的项
-            self.tb_local_music.clearSelection()
+    def on_act_del_from_disk(self, musics):
+        # 1.从歌单删除(本地音乐)
+        # 2.从硬盘删除
+        # 3.重新写入本地音乐文件
+        for music in musics:
+            os.remove(music.get_path())
+            self.cur_music_list.remove(music)
+            self.cur_whole_music_list.remove(music)
+        MusicList.to_disk(self.cur_music_list, "./data/")
+        self.show_local_music_page_data()
+        # 清除已选择的项
+        self.tb_local_music.clearSelection()
 
     def on_tb_local_music_right_click(self, pos):
         self.lm_menu.clear()
@@ -885,12 +890,17 @@ class MyWindow(QWidget, Ui_Form):
         items = self.tb_local_music.selectedItems()
         # 被选中的行号
         rows = set()
-        # 设置子菜单归属于act3
-        self.create_collect_menu(rows)
-        act3.setMenu(self.collect_menu)
-        self.lm_menu.addMenu(self.collect_menu)
         for item in items:
             rows.add(item.row())
+        musics = []
+        for row in rows:
+            music = self.cur_music_list.get(row)
+            musics.append(music)
+        # 设置子菜单归属于act3
+        self.create_collect_menu(musics)
+        act3.setMenu(self.collect_menu)
+        self.lm_menu.addMenu(self.collect_menu)
+
         # 只选中了一行
         if len(rows) == 1:
             self.lm_menu.addSeparator()
@@ -898,10 +908,10 @@ class MyWindow(QWidget, Ui_Form):
         else:
             self.lm_menu.addSeparator()
         self.lm_menu.addAction(act5)
-        act1.triggered.connect(lambda: self.on_act1_play(rows))
-        act2.triggered.connect(lambda: self.on_act2_next_play(rows))
-        act4.triggered.connect(lambda: self.on_act4_open_file(rows))
-        act5.triggered.connect(lambda: self.on_act5_del_from_disk(rows))
+        act1.triggered.connect(lambda: self.on_act_play(musics))
+        act2.triggered.connect(lambda: self.on_act_next_play(musics))
+        act4.triggered.connect(lambda: self.on_act_open_file(musics))
+        act5.triggered.connect(lambda: self.on_act_del_from_disk(musics))
         self.lm_menu.exec(QCursor.pos())
 
     def del_music_list(self, music_list_name):
