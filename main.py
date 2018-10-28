@@ -20,7 +20,7 @@ from ui.play_list_page import PlayListPage
 import util
 from search_local_music import SearchLocalMusic
 
-# TODO 播放列表页(右键菜单 & 点击链接图片跳转的对应的歌单)
+# TODO 播放列表页(点击链接图片跳转的对应的歌单)
 # TODO 自动滚动到当前播放音乐所在行: verticalScrollBar.setValue()
 # todo tablewidget 列宽可调节
 # TODO UI细节调整
