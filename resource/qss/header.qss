@@ -1,0 +1,15 @@
+QWidget#header{background-color:#c62f2f;}
+
+QPushButton#btn_icon{border-image:url(./resource/image/icon.png)}
+
+QPushButton#btn_window_close{border-image:url(./resource/image/关闭.png)}
+QPushButton#btn_window_close:hover{border-image:url(./resource/image/关闭2.png)}
+
+QPushButton#btn_window_max{border-image:url(./resource/image/最大化.png)}
+QPushButton#btn_window_max:hover{border-image:url(./resource/image/最大化2.png)}
+
+QPushButton#btn_window_min{border-image:url(./resource/image/最小化.png)}
+QPushButton#btn_window_min:hover{border-image:url(./resource/image/最小化2.png)}
+
+QPushButton#btn_set{border-image:url(./resource/image/设置.png)}
+QPushButton#btn_set:hover{border-image:url(./resource/image/设置2.png)}

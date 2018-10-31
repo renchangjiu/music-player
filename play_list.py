@@ -57,8 +57,10 @@ class PlayList(QObject):
         if index != -1:
             self.__musics.pop(index)
             if index <= self.__current_index:
-                self.__current_index -= 1
-
+                if self.__current_index != 0:
+                    self.__current_index -= 1
+                if self.size() == 0:
+                    self.__current_index = -1
     # 根据索引删除
     def __remove_2(self, index):
         print(index)

@@ -1,11 +1,13 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QPixmap, QColor, QIcon, QCursor, QPainter, QPen
 from PyQt5.QtWidgets import QWidget, QTableWidgetItem, \
     QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import util
+from music_list import MusicList
 from tablewidget import TableWidget
+import global_variable as glo_var
 
 
 class Ui_Form(object):
@@ -155,9 +157,32 @@ class PlayListPage(QWidget, Ui_Form):
         self.parent().state = self.parent().playing_state
 
     def open_music_list(self, row, column):
-        pass
-        # print(row)
-        # print(column)
+        # 若点击的是链接按钮, 则跳转到对应的歌单页面
+        if column == 3:
+            music = self.parent().cur_play_list.get(row)
+            name = music.get_from().get_name()
+            self.parent().navigation.setFocus()
+            self.parent().navigation.setCurrentRow(2)
+
+            items = self.parent().navigation.findItems(name, Qt.MatchCaseSensitive)
+            if len(items) == 1:
+                item = items[0]
+                text = item.text()
+                self.parent().navigation.setCurrentItem(item)
+                # 若是本地音乐
+                if name == "本地音乐":
+                    path = glo_var.local_musics_path
+                    self.parent().stackedWidget_2.setCurrentWidget(self.parent().local_music_page)
+                    self.parent().cur_music_list = MusicList.from_disk(path + text)
+                    self.parent().cur_whole_music_list = MusicList.from_disk(path + text)
+                # 若是其他歌单
+                else:
+                    path = glo_var.music_list_path
+                    self.parent().cur_music_list = MusicList.from_disk(path + text)
+                    self.parent().cur_whole_music_list = MusicList.from_disk(path + text)
+                    self.parent().stackedWidget_2.setCurrentWidget(self.parent().music_list_detail)
+                    self.parent().show_musics_data()
+            self.hide()
 
     def on_right_click(self):
         self.play_list_menu.clear()
@@ -198,6 +223,16 @@ class PlayListPage(QWidget, Ui_Form):
             self.parent().cur_play_list.remove(music)
         self.show_data(self.parent().cur_play_list)
         self.parent().label_play_count.setText(str(self.parent().cur_play_list.size()))
+        # 若删除的音乐包含当前播放的音乐, 则播放下一首
+        # todo bug
+        self.parent().next_music()
+
+        # 若播放列表为空, 则做些事情
+        if self.parent().cur_play_list.size() == 0:
+            self.parent().music_info_widget.hide()
+            self.parent().stop_current()
+            self.parent().btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/播放.png)}" +
+                                                  "QPushButton:hover{border-image:url(./resource/image/播放2.png)}")
 
     def create_collect_menu(self, rows):
         self.collect_menu.clear()
@@ -276,7 +311,7 @@ class PlayListPage(QWidget, Ui_Form):
             self.btn_link.setPixmap(QPixmap("./resource/image/链接.png"))
             self.btn_link.setAlignment(Qt.AlignCenter)
             self.btn_link.setCursor(Qt.PointingHandCursor)
-            self.btn_link.installEventFilter(self)
+            # self.btn_link.installEventFilter(self)
 
             # icon_item = QTableWidgetItem()
             # icon_item.setIcon(icon)
@@ -325,14 +360,17 @@ class PlayListPage(QWidget, Ui_Form):
         act.setDefaultWidget(widget)
         return act
 
-    def eventFilter(self, QObject, QEvent):
+    def eventFilter(self, QObject, QEvent_):
         # print(self.btn_link == QObject)
+
         if self.btn_link == QObject:
-            item = self.tableWidget.currentItem()
-            if item is not None:
-                pass
-                # print(item.row())
-        return super().eventFilter(QObject, QEvent)
+            if QEvent_.type() == QEvent.MouseButtonPress:
+                # print("haha")
+                item = self.tableWidget.currentItem()
+                if item is not None:
+                    pass
+                    # print(item.row())
+        return super().eventFilter(QObject, QEvent_)
 
     def paintEvent(self, QPaintEvent):
         # 画出边框线

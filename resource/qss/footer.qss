@@ -1,0 +1,44 @@
+QWidget#footer{background-color:#f6f6f8; border:none;outline:0px;border-top:1px solid #e1e1e2;}
+
+QPushButton#btn_previous{border-image:url(./resource/image/上一首.png)}
+QPushButton#btn_previous:hover{border-image:url(./resource/image/上一首2.png)}
+
+QPushButton#btn_next{border-image:url(./resource/image/下一首.png)}
+QPushButton#btn_next:hover{border-image:url(./resource/image/下一首2.png)}
+
+QPushButton#btn_start{border-image:url(./resource/image/播放.png)}
+QPushButton#btn_start:hover{border-image:url(./resource/image/播放2.png)}
+
+QPushButton#btn_mute{border-image:url(./resource/image/喇叭.png)}
+QPushButton#btn_mute:hover{border-image:url(./resource/image/喇叭2.png)}
+
+QPushButton#btn_play_mode{border-image:url(./resource/image/顺序播放.png)}
+QPushButton#btn_play_mode:hover{border-image:url(./resource/image/顺序播放2.png)}
+
+QPushButton#btn_desktop_lyric{border-image:url(./resource/image/歌词.png)}
+QPushButton#btn_desktop_lyric:hover{border-image:url(./resource/image/歌词2.png)}
+
+QPushButton#btn_play_list{border-image:url(./resource/image/播放列表.png)}
+QPushButton#btn_play_list:hover{border-image:url(./resource/image/播放列表2.png)}
+
+QLabel#label_play_count{
+    color:#333333;
+    background-color:#e1e1e2;
+    border-width:1px;
+    border-color:#e1e1e2;
+    border-style:solid;
+    border-top-right-radius:7px;
+    border-bottom-right-radius:7px;
+}
+
+QSlider#slider_progress{border:none}
+QSlider#slider_progress::groove:horizontal{border:0px;height:4px;}
+QSlider#slider_progress::sub-page:horizontal{background:#e83c3c;}
+QSlider#slider_progress::add-page:horizontal{background:#c2c2c4;}
+QSlider#slider_progress::handle:horizontal{background:white;width:10px;border:#51b5fb 10px;border-radius:5px;margin:-3px 0px -3px 0px;}
+
+QSlider#slider_volume{border:none}
+QSlider#slider_volume::groove:horizontal{border:0px;height:4px;}
+QSlider#slider_volume::sub-page:horizontal{background:#e83c3c;}
+QSlider#slider_volume::add-page:horizontal{background:#e6e6e8;}
+QSlider#slider_volume::handle:horizontal{background:white;width:10px;border:#51b5fb 10px;border-radius:5px;margin:-3px 0px -3px 0px;}

@@ -20,18 +20,17 @@ from ui.play_list_page import PlayListPage
 import util
 from search_local_music import SearchLocalMusic
 
-# TODO 播放列表页(点击链接图片跳转的对应的歌单)
 # TODO 自动滚动到当前播放音乐所在行: verticalScrollBar.setValue()
-# todo tablewidget 列宽可调节
+# TODO tablewidget 列宽可调节
 # TODO UI细节调整
 # todo 歌单图片 & 显示播放数
 # TODO 重构 & 拆分入口文件
 from ui.toast import Toast
 
 
-class MyWindow(QWidget, Ui_Form):
+class MainWindow(QWidget, Ui_Form):
     # 播放状态
-    stopped_state = 0
+    stopped_state = 0  # 该状态已被废弃
     playing_state = 1
     paused_state = 2
 
@@ -46,7 +45,7 @@ class MyWindow(QWidget, Ui_Form):
         # 音乐时长
         self.duration = -1
         # 播放状态
-        self.state = self.stopped_state
+        self.state = self.paused_state
         # 播放位置
         self.percent_pos = -0.1
         self.is_mute = False
@@ -70,7 +69,6 @@ class MyWindow(QWidget, Ui_Form):
         self.init_data()
         self.init_table_widget_ui()
         self.init_ui()
-        self.init_button()
         self.init_shortcut()
         self.init_connect()
 
@@ -141,11 +139,11 @@ class MyWindow(QWidget, Ui_Form):
         self.stackedWidget_2.setCurrentWidget(self.music_list_detail)
         self.musics.setColumnCount(5)
         # 将歌单中的歌曲列表加载到 table widget
-        self.show_musics_data()
         if self.cur_play_list is None:
             self.cur_play_list = MusicList.to_play_list(self.cur_music_list)
             self.cur_play_list.set_current_index(0)
             self.cur_play_list.current_music_change.connect(self.on_cur_play_list_change)
+        self.show_musics_data()
 
     def init_table_widget_ui(self):
         # --------------------- 1. 歌单音乐列表UI --------------------- #
@@ -187,7 +185,6 @@ class MyWindow(QWidget, Ui_Form):
             self.set_musics_layout()
             # 加载歌单中的歌曲列表
             self.show_musics_data()
-            self.show_icon_item()
             self.musics.setCurrentCell(0, 0)
 
     # 将歌单中的歌曲列表加载到 table widget(需先设置行列数)
@@ -211,16 +208,11 @@ class MyWindow(QWidget, Ui_Form):
             self.musics.setItem(i, 2, QTableWidgetItem(str(music.get_artist())))
             self.musics.setItem(i, 3, QTableWidgetItem(str(music.get_album())))
             self.musics.setItem(i, 4, QTableWidgetItem(str(util.format_time(music.get_duration()))))
-
-    def show_local_music_page(self):
-        self.stackedWidget_2.setCurrentWidget(self.local_music_page)
-        self.cur_music_list = SearchLocalMusic.get_exist_result()
-        self.cur_whole_music_list = SearchLocalMusic.get_exist_result()
-        self.show_local_music_page_data()
+        # 若当前播放的音乐属于该歌单, 则为其设置喇叭图标
+        self.set_icon_item()
 
     def show_local_music_page_data(self):
         self.label_2.setText("%d首音乐" % self.cur_whole_music_list.size())
-        print(132)
         self.tb_local_music.clearContents()
         self.tb_local_music.setRowCount(self.cur_music_list.size())
         self.set_tb_local_music_layout()
@@ -235,6 +227,33 @@ class MyWindow(QWidget, Ui_Form):
             self.tb_local_music.setItem(i, 3, QTableWidgetItem(str(music.get_album())))
             self.tb_local_music.setItem(i, 4, QTableWidgetItem(str(util.format_time(music.get_duration()))))
             self.tb_local_music.setItem(i, 5, QTableWidgetItem(str(music.get_size())))
+        self.set_icon_item()
+
+    def set_icon_item(self):
+        if self.cur_play_list is not None:
+            if self.cur_play_list.get_current_music() is not None:
+                if self.cur_play_list.get_current_music().get_from().get_name() == self.cur_music_list.get_name():
+                    playing_row = self.cur_music_list.index_of(self.cur_play_list.get_current_music())
+                    if playing_row != -1:
+                        icon_label = QLabel()
+                        # 播放状态或暂停状态显示两种图标
+                        if self.state == self.playing_state:
+                            icon_label.setPixmap(QPixmap("./resource/image/musics_play.png"))
+                        else:
+                            icon_label.setPixmap(QPixmap("./resource/image/musics_pause.png"))
+                        icon_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+                        if self.stackedWidget_2.currentWidget() == self.music_list_detail:
+                            self.musics.item(playing_row, 0).setText("")
+                            self.musics.setCellWidget(playing_row, 0, icon_label)
+                        elif self.stackedWidget_2.currentWidget() == self.local_music_page:
+                            self.tb_local_music.item(playing_row, 0).setText("")
+                            self.tb_local_music.setCellWidget(playing_row, 0, icon_label)
+
+    def show_local_music_page(self):
+        self.stackedWidget_2.setCurrentWidget(self.local_music_page)
+        self.cur_music_list = SearchLocalMusic.get_exist_result()
+        self.cur_whole_music_list = SearchLocalMusic.get_exist_result()
+        self.show_local_music_page_data()
 
     def set_musics_layout(self):
         self.musics.setColumnWidth(0, self.musics.width() * 0.06)
@@ -253,6 +272,7 @@ class MyWindow(QWidget, Ui_Form):
 
     # 当存放音乐列表的表格被双击
     def on_tb_double_clicked(self, QModelIndex_):
+        self.state = self.playing_state
         index = QModelIndex_.row()
         # 把当前歌单的全部音乐加入到播放列表
         self.cur_play_list = MusicList.to_play_list(self.cur_whole_music_list)
@@ -271,7 +291,6 @@ class MyWindow(QWidget, Ui_Form):
                                      "QPushButton:hover{border-image:url(./resource/image/暂停2.png)}")
         # 读取音乐名片
         self.show_music_info()
-        self.state = self.playing_state
 
     # 显示左下音乐名片相关信息
     def show_music_info(self):
@@ -295,31 +314,7 @@ class MyWindow(QWidget, Ui_Form):
             self.music_info_widget.hide()
 
     def init_button(self):
-        self.btn_previous.setStyleSheet("QPushButton{border-image:url(./resource/image/上一首.png)}" +
-                                        "QPushButton:hover{border-image:url(./resource/image/上一首2.png)}")
-
-        self.btn_next.setStyleSheet("QPushButton{border-image:url(./resource/image/下一首.png)}" +
-                                    "QPushButton:hover{border-image:url(./resource/image/下一首2.png)}")
-
-        self.btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/播放.png)}" +
-                                     "QPushButton:hover{border-image:url(./resource/image/播放2.png)}")
-
-        self.btn_mute.setStyleSheet("QPushButton{border-image:url(./resource/image/喇叭.png)}" +
-                                    "QPushButton:hover{border-image:url(./resource/image/喇叭2.png)}")
-
-        self.btn_play_mode.setStyleSheet("QPushButton{border-image:url(./resource/image/顺序播放.png)}" +
-                                         "QPushButton:hover{border-image:url(./resource/image/顺序播放2.png)}")
-
-        self.btn_desktop_lyric.setStyleSheet("QPushButton{border-image:url(./resource/image/歌词.png)}" +
-                                             "QPushButton:hover{border-image:url(./resource/image/歌词2.png)}")
-
-        self.btn_play_list.setStyleSheet("QPushButton{border-image:url(./resource/image/播放列表.png)}" +
-                                         "QPushButton:hover{border-image:url(./resource/image/播放列表2.png)}")
-
         self.label_play_count.setText(str(self.cur_play_list.size()))
-        self.label_play_count.setStyleSheet("QLabel{color:#333333; background-color: #e1e1e2;border-width:1;" +
-                                            "border-color:#e1e1e2; border-style:solid; border-top-right-radius:7px;border-bottom-right-radius:7px;}")
-
         self.btn_previous.setCursor(Qt.PointingHandCursor)
         self.btn_next.setCursor(Qt.PointingHandCursor)
         self.btn_start.setCursor(Qt.PointingHandCursor)
@@ -386,6 +381,7 @@ class MyWindow(QWidget, Ui_Form):
         self.play_list_page.show_data(self.cur_play_list)
         self.music_info_widget.hide()
         self.stop_current()
+        self.label_play_count.setText("0")
         self.btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/播放.png)}" +
                                      "QPushButton:hover{border-image:url(./resource/image/播放2.png)}")
 
@@ -488,16 +484,10 @@ class MyWindow(QWidget, Ui_Form):
         self.main_stacked_widget.setCurrentWidget(self.main_page)
         self.stackedWidget_2.setCurrentWidget(self.music_list_detail)
         # ------------------ header------------------ #
-        self.header.setStyleSheet("background-color:#c62f2f")
-        self.btn_icon.setStyleSheet("QPushButton{border-image:url(./resource/image/icon.png)}")
-        self.btn_window_close.setStyleSheet("QPushButton{border-image:url(./resource/image/关闭.png)}" +
-                                            "QPushButton:hover{border-image:url(./resource/image/关闭2.png)}")
-        self.btn_window_max.setStyleSheet("QPushButton{border-image:url(./resource/image/最大化.png)}" +
-                                          "QPushButton:hover{border-image:url(./resource/image/最大化2.png)}")
-        self.btn_window_min.setStyleSheet("QPushButton{border-image:url(./resource/image/最小化.png)}" +
-                                          "QPushButton:hover{border-image:url(./resource/image/最小化2.png)}")
-        self.btn_set.setStyleSheet("QPushButton{border-image:url(./resource/image/设置.png)}" +
-                                   "QPushButton:hover{border-image:url(./resource/image/设置2.png)}")
+        qss_header = open("./resource/qss/header.qss", "r", encoding="utf-8")
+        self.header.setStyleSheet(qss_header.read())
+        qss_header.close()
+
         self.btn_icon.setCursor(Qt.PointingHandCursor)
         self.btn_window_close.setCursor(Qt.PointingHandCursor)
         self.btn_window_max.setCursor(Qt.PointingHandCursor)
@@ -541,8 +531,7 @@ class MyWindow(QWidget, Ui_Form):
             "border-right:1px solid #e1e1e2;border-bottom:1px solid #e1e1e2}"
             "QListWidget::Item{height:32px;border:0px solid gray;padding-left:19px;font-size:13px;}"
             "QListWidget::Item:hover{color:#000000;background:transparent;border:0px solid gray;}"
-            "QListWidget::Item:selected{color:#000000;border:0px solid gray;}"
-            "QListWidget::Item:selected:active{background:#e6e7ea;color:#000000;border-left: 3px solid #c62f2f;}")
+            "QListWidget::Item:selected{background:#e6e7ea;color:#000000;border-left: 3px solid #c62f2f;}")
         self.navigation.verticalScrollBar().setStyleSheet("QScrollBar{background:#fafafa; width: 8px;}"
                                                           "QScrollBar::handle{background:#e1e1e2;border-radius:4px;}"
                                                           "QScrollBar::handle:hover{background:#cfcfd1;}"
@@ -584,18 +573,9 @@ class MyWindow(QWidget, Ui_Form):
         # ------------------ footer ------------------ #
         self.slider_volume.setValue(self.volume)
         self.slider_volume.setCursor(Qt.PointingHandCursor)
-        self.footer.setStyleSheet(
-            "QWidget{background-color:#f6f6f8; border:none;outline:0px;border-top:1px solid #e1e1e2;}")
-        self.slider_progress.setStyleSheet("QSlider::groove:horizontal{border:0px;height:4px;}"
-                                           "QSlider::sub-page:horizontal{background:#e83c3c;}"
-                                           "QSlider::add-page:horizontal{background:#c2c2c4;} "
-                                           "QSlider::handle:horizontal{background:white;width:10px;border:#51b5fb 10px;border-radius:5px;margin:-3px 0px -3px 0px;}"
-                                           "QSlider{border:none}")
-        self.slider_volume.setStyleSheet("QSlider::groove:horizontal{border:0px;height:4px;}"
-                                         "QSlider::sub-page:horizontal{background:#e83c3c;}"
-                                         "QSlider::add-page:horizontal{background:#e6e6e8;} "
-                                         "QSlider::handle:horizontal{background:white;width:10px;border:#51b5fb 10px;border-radius:5px;margin:-3px 0px -3px 0px;}"
-                                         "QSlider{border:none}")
+        qss_foot = open("./resource/qss/footer.qss", "r", encoding="utf-8")
+        self.footer.setStyleSheet(qss_foot.read())
+        qss_foot.close()
 
         # ------------------ 全屏播放窗口 ------------------ #
         self.play_page.setStyleSheet("border-image:url(./resource/image/渐变背景.png) repeated;border:none; ")
@@ -643,6 +623,7 @@ class MyWindow(QWidget, Ui_Form):
         self.search_act_2 = QAction(self)
         self.search_act_2.setIcon(QIcon("./resource/image/搜索3.png"))
         self.le_search_local_music.addAction(self.search_act_2, QLineEdit.TrailingPosition)
+        self.init_button()
 
     def init_menu(self):
         # 1. 导航栏右键菜单
@@ -657,26 +638,14 @@ class MyWindow(QWidget, Ui_Form):
         # 4. 本地音乐右键菜单
         self.lm_menu = QMenu()
 
-        self.nav_menu.setStyleSheet(
-            "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
-            "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
-            "QMenu::item:selected {background-color:#ededef;}" +
-            "QMenu::separator{background-color:#ededef;height:1px}")
-        self.musics_menu.setStyleSheet(
-            "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
-            "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
-            "QMenu::item:selected {background-color:#ededef;}" +
-            "QMenu::separator{background-color:#ededef;height:1px}")
-        self.collect_menu.setStyleSheet(
-            "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
-            "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
-            "QMenu::item:selected {background-color:#ededef;}" +
-            "QMenu::separator{background-color:#ededef;height:1px}")
-        self.lm_menu.setStyleSheet(
-            "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" +
-            "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" +
-            "QMenu::item:selected {background-color:#ededef;}" +
-            "QMenu::separator{background-color:#ededef;height:1px}")
+        qss = "QMenu{background-color:#fafafc;border:1px solid #c8c8c8;font-size:13px;width:214px;}" \
+              "QMenu::item {height:36px;padding-left:44px;padding-right:60px;}" \
+              "QMenu::item:selected {background-color:#ededef;}" \
+              "QMenu::separator{background-color:#ededef;height:1px}"
+        self.nav_menu.setStyleSheet(qss)
+        self.musics_menu.setStyleSheet(qss)
+        self.collect_menu.setStyleSheet(qss)
+        self.lm_menu.setStyleSheet(qss)
 
     def show_play_list(self):
         if self.play_list_page.isHidden():
@@ -928,40 +897,18 @@ class MyWindow(QWidget, Ui_Form):
             self.cur_music_list = self.cur_whole_music_list.copy()
         # 显示当前页面显示两个不同的表格
         if self.stackedWidget_2.currentWidget() == self.music_list_detail:
-            self.show_icon_item()
+            self.show_musics_data()
         elif self.stackedWidget_2.currentWidget() == self.local_music_page:
             self.show_local_music_page_data()
 
-    # 为musics(tablewidget)的某一行显示喇叭图片
-    def show_icon_item(self):
+    def on_cur_play_list_change(self, music):
         if self.stackedWidget_2.currentWidget() == self.music_list_detail:
-            # 总是要设置数据
             self.show_musics_data()
-            # print("equal   ",
-            #       self.cur_play_list.get_current_music().get_from().get_name() == self.cur_music_list.get_name())
-            # print(self.cur_play_list.get_current_music())
-            if self.cur_play_list.get_current_music() is not None:
-                if self.cur_play_list.get_current_music().get_from().get_name() == self.cur_music_list.get_name():
-                    playing_row = self.cur_music_list.index_of(self.cur_play_list.get_current_music())
-                    if playing_row != -1:
-                        # 先把之前的喇叭恢复成数字(目前无法确定上一首音乐的位置, 只能重新全部设置数据)
-                        # self.show_musics_data()
-                        # 再设置喇叭图标
-                        self.musics.item(playing_row, 0).setText("")
-                        icon_label = QLabel()
-                        icon_label.setPixmap(QPixmap("./resource/image/musics_play.png"))
-                        icon_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                        self.musics.setCellWidget(playing_row, 0, icon_label)
         elif self.stackedWidget_2.currentWidget() == self.local_music_page:
-            # todo 本地音乐页面的喇叭图标
-            pass
-            # self.show_local_music_page_data()
+            self.show_local_music_page_data()
         # 同步更新播放列表页的数据
         if self.cur_play_list is not None:
             self.play_list_page.show_data(self.cur_play_list)
-
-    def on_cur_play_list_change(self, music):
-        self.show_icon_item()
 
     def show_choose_music_dir_page(self):
         self.choose_music_dir_page = ChooseMusicDirPage(self)
@@ -976,18 +923,16 @@ class MyWindow(QWidget, Ui_Form):
 
     def play_pause(self):
         if self.cur_play_list is not None and self.cur_play_list.size() > 0:
-            if self.state == self.stopped_state:
-                self.play()
-                self.btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/暂停.png)}" +
-                                             "QPushButton:hover{border-image:url(./resource/image/暂停2.png)}")
-                if self.is_mute:
-                    self.process.write(b"mute 1\n")
-                self.state = self.playing_state
-            elif self.state == self.playing_state:
+            if self.state == self.playing_state:
                 self.process.write(b"pause\n")
                 self.btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/播放.png)}" +
                                              "QPushButton:hover{border-image:url(./resource/image/播放2.png)}")
+                # if self.stackedWidget_2.currentWidget() == self.music_list_detail:
+                #     print("pass")
+                # elif self.stackedWidget_2.currentWidget() == self.local_music_page:
+                #     pass
                 self.state = self.paused_state
+                self.set_icon_item()
             elif self.state == self.paused_state:
                 if self.process is None:
                     self.play()
@@ -1006,6 +951,7 @@ class MyWindow(QWidget, Ui_Form):
                         self.process.write(b"seek %d 2\n" % pos)
                         self.percent_pos = -0.1
                     self.state = self.playing_state
+                self.set_icon_item()
 
     # 设置音量
     def set_volume(self, value):
@@ -1171,7 +1117,7 @@ def main():
     # qss = open("./resource/qss/main.qss", "r", encoding="utf-8")
     # read = qss.read()
     # app.setStyleSheet(read)
-    my_window = MyWindow()
+    my_window = MainWindow()
     my_window.show()
     sys.exit(app.exec_())
 
@@ -1192,3 +1138,4 @@ def init_install():
 if __name__ == "__main__":
     main()
     # init_install()
+    # 1153 -> 1141
