@@ -219,13 +219,18 @@ class PlayListPage(QWidget, Ui_Form):
         self.play_list_menu.exec(QCursor.pos())
 
     def on_act_del(self, musics):
+        cur = self.parent().cur_play_list.get_current_music()
+        playing = False
+        for music in musics:
+            if music.get_path() == cur.get_path() and music.get_from().get_name() == cur.get_from().get_name():
+                playing = True
+
         for music in musics:
             self.parent().cur_play_list.remove(music)
         self.show_data(self.parent().cur_play_list)
         self.parent().label_play_count.setText(str(self.parent().cur_play_list.size()))
-        # 若删除的音乐包含当前播放的音乐, 则播放下一首
-        # todo bug
-        self.parent().next_music()
+        if playing:
+            self.parent().next_music()
 
         # 若播放列表为空, 则做些事情
         if self.parent().cur_play_list.size() == 0:

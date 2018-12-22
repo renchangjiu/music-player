@@ -5,6 +5,7 @@
 # Created by: PyQt5 UI code generator 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
+import os
 import sys, configparser
 import threading
 
@@ -15,10 +16,10 @@ from PyQt5.QtGui import QPixmap, QBrush, QFont, QColor, QIcon, QImage, QFontMetr
 from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QAbstractItemView, QListWidgetItem, QTableWidgetItem, \
     QAction, QMenu, QLabel, QCheckBox, QFileDialog
 
-
 from search_local_music import SearchLocalMusic
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -143,7 +144,6 @@ class Ui_Dialog(object):
         self.label_2.setText(_translate("Dialog", " 将自动扫描您勾选的目录, 文件增删实时同步"))
 
 
-
 class ChooseMusicDirPage(QtWidgets.QDialog, Ui_Dialog):
     local_musics_change = QtCore.pyqtSignal()
 
@@ -165,7 +165,9 @@ class ChooseMusicDirPage(QtWidgets.QDialog, Ui_Dialog):
 
     def add_checkbox(self, text):
         # 特殊字符, 把一个 &, 替换成两个 &&, 以正常显示一个&
-        check_box = QCheckBox(text.replace("&", "&&"), self.scrollAreaWidgetContents)
+        # error, 上述方法会导致bug
+        # check_box = QCheckBox(text.replace("&", "&&"), self.scrollAreaWidgetContents)
+        check_box = QCheckBox(text, self.scrollAreaWidgetContents)
         check_box.setToolTip(text)
         self.verticalLayout.addWidget(check_box, alignment=Qt.AlignTop)
         return check_box
@@ -212,7 +214,7 @@ class ChooseMusicDirPage(QtWidgets.QDialog, Ui_Dialog):
     def show_dialog(self):
         path = QFileDialog.getExistingDirectory(self, "选择添加目录", r"C:/", QFileDialog.ShowDirsOnly)
         if path.strip() != "":
-            # 如果要添加的path是否不存在, 是则添加
+            # 要添加的path是否不存在, 是则添加
             if self.in_paths(path) == "":
                 checkbox = self.add_checkbox(path)
                 checkbox.setCheckState(Qt.Checked)
@@ -262,13 +264,12 @@ class ChooseMusicDirPage(QtWidgets.QDialog, Ui_Dialog):
                     change_paths.append(path)
         # 如果path有变化, 则重新搜索新的path
         if len(change_paths) != 0:
-            print(cur_paths)
+            # print(cur_paths)
             search_local_music = SearchLocalMusic()
             search_local_music.begin_search.connect(self.begin)
             search_local_music.end_search.connect(self.end)
             thread = threading.Thread(target=lambda: self.sub_thread(search_local_music, cur_paths))
             thread.start()
-
 
     # 比较path修改前后的变化(多一个 or 少一个)
     def compare_two_path_可被优化的(self, cur_paths):
@@ -303,8 +304,9 @@ class ChooseMusicDirPage(QtWidgets.QDialog, Ui_Dialog):
     def sub_thread(self, search_local_music, change_paths):
         paths = []
         for path in change_paths:
-            if path[1] == "checked":
+            if path[1] == "checked" and os.path.exists(path[0]):
                 paths.append(path[0])
+        print(paths)
         search_local_music.search_in_path(paths)
 
     def init_ui(self):

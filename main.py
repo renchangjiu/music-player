@@ -1,4 +1,4 @@
-import re, os, sys
+import re, os, sys, time
 import threading
 import winreg
 
@@ -20,6 +20,7 @@ from ui.play_list_page import PlayListPage
 import util
 from search_local_music import SearchLocalMusic
 
+# TODO 如果要播放的文件不存在:  0. 右键播放, 1. 正在的播放的文件被删除, 4. 双击歌单列表, 但目标文件已被删除, 5. 双击播放列表, ..., 6. 要删除已被删除的文件
 # TODO 自动滚动到当前播放音乐所在行: verticalScrollBar.setValue()
 # TODO tablewidget 列宽可调节
 # TODO UI细节调整
@@ -100,7 +101,7 @@ class MainWindow(QWidget, Ui_Form):
         paths = ChooseMusicDirPage.get_music_path()
         temp = []
         for path in paths:
-            if path[1] == "checked":
+            if path[1] == "checked" and os.path.exists(path[0]):
                 temp.append(path[0])
         search_local_music.search_in_path(temp)
 
@@ -756,7 +757,7 @@ class MainWindow(QWidget, Ui_Form):
         # 2. 选中的音乐依次在current index后加入播放列表
         # 3. 播放第一个选中的音乐
         for music in musics:
-            print(music)
+            # print(music)
             self.cur_play_list.remove(music)
         cur_index = self.cur_play_list.get_current_index()
         for music in musics:
@@ -766,6 +767,9 @@ class MainWindow(QWidget, Ui_Form):
         self.label_play_count.setText(str(self.cur_play_list.size()))
         self.cur_play_list.set_current_index(self.cur_play_list.get_current_index() + 1)
         self.stop_current()
+        if not os.path.exists(self.cur_play_list.get_current_music().get_path()):
+            self.next_music()
+            return
         self.play()
         self.btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/暂停.png)}" +
                                      "QPushButton:hover{border-image:url(./resource/image/暂停2.png)}")
@@ -818,7 +822,7 @@ class MainWindow(QWidget, Ui_Form):
     def on_act_open_file(self, musics):
         if len(musics) == 1:
             music = musics[0]
-            command = "explorer /select, %s" % music.get_path().replace("/", "\\")
+            command = "explorer /select, \"%s\"" % music.get_path().replace("/", "\\")
             os.system(command)
 
     # 选中歌单列表的音乐, 点击 "从歌单中删除"
@@ -832,12 +836,15 @@ class MainWindow(QWidget, Ui_Form):
 
     def on_act_del_from_disk(self, musics):
         # 1.从歌单删除(本地音乐)
-        # 2.从硬盘删除
-        # 3.重新写入本地音乐文件
+        # 2.从播放列表中删除(如果有的话)
+        # 3.从硬盘删除
+        # 4.重新写入本地音乐文件
         for music in musics:
             os.remove(music.get_path())
             self.cur_music_list.remove(music)
             self.cur_whole_music_list.remove(music)
+            self.cur_play_list.remove(music)
+        self.label_play_count.setText(str(self.cur_play_list.size()))
         MusicList.to_disk(self.cur_music_list, "./data/")
         self.show_local_music_page_data()
         # 清除已选择的项
@@ -927,10 +934,6 @@ class MainWindow(QWidget, Ui_Form):
                 self.process.write(b"pause\n")
                 self.btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/播放.png)}" +
                                              "QPushButton:hover{border-image:url(./resource/image/播放2.png)}")
-                # if self.stackedWidget_2.currentWidget() == self.music_list_detail:
-                #     print("pass")
-                # elif self.stackedWidget_2.currentWidget() == self.local_music_page:
-                #     pass
                 self.state = self.paused_state
                 self.set_icon_item()
             elif self.state == self.paused_state:
@@ -1067,6 +1070,12 @@ class MainWindow(QWidget, Ui_Form):
             self.info_reset()
             self.stop_current()
             self.cur_play_list.previous()
+            # 若上一首歌曲已不存在, 则尝试播放上上一首
+            if not os.path.exists(self.cur_play_list.get_current_music().get_path()):
+                Toast.show_(self, "该歌曲已不存在(%s)" % self.cur_play_list.get_current_music().get_path(), False, 3000)
+                print(self.cur_play_list.get_current_music().get_path() + "\t不存在")
+                self.previous_music()
+                return
             self.show_music_info()
             if self.state == self.playing_state:
                 self.play()
@@ -1078,6 +1087,12 @@ class MainWindow(QWidget, Ui_Form):
             self.info_reset()
             self.stop_current()
             self.cur_play_list.next()
+            # 若下一首歌曲已不存在, 则尝试播放下下一首
+            if not os.path.exists(self.cur_play_list.get_current_music().get_path()):
+                Toast.show_(self, "该歌曲已不存在(%s)" % self.cur_play_list.get_current_music().get_path(), False, 3000)
+                print(self.cur_play_list.get_current_music().get_path() + "\t不存在")
+                self.next_music()
+                return
             self.show_music_info()
             if self.state == self.playing_state:
                 self.play()
