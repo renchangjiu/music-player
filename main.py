@@ -12,9 +12,9 @@ from src.service.LRCParser import LRC
 from src.service.MP3Parser import MP3
 from src.service.main_widget import Ui_Form
 from src.entity.music_list import MusicList
-from ui import add_music_list
-from ui.choose_music_dir import ChooseMusicDirPage
-from ui.play_list_page import PlayListPage
+from src.ui import add_music_list
+from src.ui.choose_music_dir import ChooseMusicDirPage
+from src.ui.play_list_page import PlayListPage
 from src.service import util, global_variable as glo_var
 from src.service.search_local_music import SearchLocalMusic
 
@@ -24,7 +24,7 @@ from src.service.search_local_music import SearchLocalMusic
 # TODO UI细节调整
 # todo 歌单图片 & 显示播放数
 # TODO 重构 & 拆分入口文件
-from ui.toast import Toast
+from src.ui.toast import Toast
 
 
 class MainWindow(QWidget, Ui_Form):
