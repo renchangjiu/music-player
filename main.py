@@ -1,24 +1,22 @@
-import re, os, sys, time
+import re, os, sys
 import threading
 import winreg
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, QTimer, QProcess, QEvent, QSize, QPointF
-from PyQt5.QtGui import QPixmap, QBrush, QFont, QColor, QIcon, QImage, QFontMetrics, QCursor, QLinearGradient, \
-    QGradient, QPainter, QMovie
-from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QAbstractItemView, QListWidgetItem, QTableWidgetItem, \
+from PyQt5.QtCore import Qt, QTimer, QProcess, QEvent, QSize
+from PyQt5.QtGui import QPixmap, QFont, QIcon, QImage, QFontMetrics, QCursor
+from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QListWidgetItem, QTableWidgetItem, \
     QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout
 
-import global_variable as glo_var
-from LRCParser import LRC
-from MP3Parser import MP3
-from main_widget import Ui_Form
-from music_list import MusicList
+from src.service.LRCParser import LRC
+from src.service.MP3Parser import MP3
+from src.service.main_widget import Ui_Form
+from src.entity.music_list import MusicList
 from ui import add_music_list
 from ui.choose_music_dir import ChooseMusicDirPage
 from ui.play_list_page import PlayListPage
-import util
-from search_local_music import SearchLocalMusic
+from src.service import util, global_variable as glo_var
+from src.service.search_local_music import SearchLocalMusic
 
 # TODO 如果要播放的文件不存在:  0. 右键播放, 1. 正在的播放的文件被删除, 4. 双击歌单列表, 但目标文件已被删除, 5. 双击播放列表, ..., 6. 要删除已被删除的文件
 # TODO 自动滚动到当前播放音乐所在行: verticalScrollBar.setValue()
@@ -191,7 +189,7 @@ class MainWindow(QWidget, Ui_Form):
     # 将歌单中的歌曲列表加载到 table widget(需先设置行列数)
     def show_musics_data(self):
         self.music_list_name.setText(self.cur_music_list.get_name())
-        self.music_list_date.setText("%s创建" % self.cur_music_list.get_date())
+        self.music_list_date.setText("%s创建" % self.cur_music_list.get_created())
         self.music_count.setText("<p>歌曲数</p><p style='text-align: right'>%d</p>" % self.cur_music_list.size())
         self.music_list_play_count.setText(
             "<p>播放数</p><p style='text-align: right'>%d</p>" % self.cur_music_list.get_play_count())
@@ -508,7 +506,7 @@ class MainWindow(QWidget, Ui_Form):
         mln_font.setPointSize(20)
         self.music_list_name.setFont(mln_font)
         # self.music_list_name.setText(self.cur_music_list.get_name())
-        # self.music_list_date.setText("%s创建" % self.cur_music_list.get_date())
+        # self.music_list_date.setText("%s创建" % self.cur_music_list.get_creatd())
         self.music_count.setStyleSheet("color:#999999")
         self.music_list_play_count.setStyleSheet("color:#999999")
         # self.line.setStyleSheet("background-color:#999999;border:10px")

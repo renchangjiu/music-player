@@ -4,10 +4,9 @@ from PyQt5.QtWidgets import QWidget, QTableWidgetItem, \
     QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import util
-from music_list import MusicList
-from tablewidget import TableWidget
-import global_variable as glo_var
+from src.service import util, global_variable as glo_var
+from src.entity.music_list import MusicList
+from src.service.tablewidget import TableWidget
 
 
 class Ui_Form(object):

@@ -1,12 +1,12 @@
-import os, json
+import os
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QObject
 
-from MP3Parser import MP3
+from src.service.MP3Parser import MP3
 
-from music import Music
-from music_list import MusicList
+from src.entity.music import Music
+from src.entity.music_list import MusicList
 
 
 class SearchLocalMusic(QObject):

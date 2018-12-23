@@ -2,8 +2,8 @@ import os
 
 from PyQt5.QtGui import QFontMetrics
 
-import global_variable as gv
-from music_list import MusicList
+from src.service import global_variable as gv
+from src.entity.music_list import MusicList
 
 
 # 把秒级时间格式化为mm:ss形式, second: str

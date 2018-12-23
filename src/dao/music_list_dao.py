@@ -1,5 +1,5 @@
 import sqlite3
-import global_variable as gv
+from src.entity.music_list import MusicList
 
 
 class MusicListDao:
@@ -8,26 +8,45 @@ class MusicListDao:
         self.database = "../../data/data.db"
         self.conn = sqlite3.connect(self.database)
 
-    def select_list(self):
-        sql = "select * from user"
+    def select_list(self) -> list:
+        """
+        查询所有歌单
+
+        :return: music_lists
+        """
+        music_lists = []
+        sql = "select * from t_music_list"
         cursor = self.conn.cursor()
         cursor.execute(sql)
         ret = cursor.fetchall()
-        print(ret)
+        for i in range(len(ret)):
+            row = ret[i]
+            ml = MusicList()
+            ml.set_id(row[0])
+            ml.set_name(row[1])
+            ml.set_play_count(row[2])
+            ml.set_created(row[3])
+            music_lists.append(ml)
+        return music_lists
 
-    def test(self):
-        # 创建一个Cursor:
+    def select_by_id(self, _id) -> MusicList:
+        """
+        select music list by id
+
+        :param _id: 歌单id
+        :return: MusicList
+        """
+        sql = "select * from t_music_list where id = ?"
         cursor = self.conn.cursor()
-        # 执行一条SQL语句，创建user表:
-        cursor.execute('create table user (id varchar(20) primary key, name varchar(20))')
-        # 继续执行一条SQL语句，插入一条记录:
-        cursor.execute('insert into user (id, name) values (\'1\', \'Michael\')')
-        # 通过rowcount获得插入的行数:
-        print(cursor.rowcount)
-        # 关闭Cursor:
+        cursor.execute(sql, (_id,))
+        ret = cursor.fetchall()[0]
+        music_list = MusicList()
+        music_list.set_id(ret[0])
+        music_list.set_name(ret[1])
+        music_list.set_play_count(ret[2])
+        music_list.set_created(ret[3])
         cursor.close()
-        # 提交事务:
-        self.conn.commit()
+        return music_list
 
     def close(self):
         # 关闭Connection:
@@ -35,4 +54,5 @@ class MusicListDao:
 
 
 if __name__ == "__main__":
+    # MusicListDao().select_by_id(1)
     MusicListDao().select_list()

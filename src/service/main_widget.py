@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from tablewidget import TableWidget
+from src.service.tablewidget import TableWidget
 
 
 class Ui_Form(object):

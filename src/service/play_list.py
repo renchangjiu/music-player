@@ -1,8 +1,7 @@
-import os
 from PyQt5 import QtCore
-from PyQt5.QtCore import QObject, Qt, QThread, QUrl, QTimer
+from PyQt5.QtCore import QObject
 
-from music import Music
+from src.entity.music import Music
 
 
 class PlayList(QObject):

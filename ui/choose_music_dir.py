@@ -6,17 +6,13 @@
 #
 # WARNING! All changes made in this file will be lost!
 import os
-import sys, configparser
+import configparser
 import threading
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, QTimer, QProcess, QEvent, QSize, QPointF
-from PyQt5.QtGui import QPixmap, QBrush, QFont, QColor, QIcon, QImage, QFontMetrics, QCursor, QLinearGradient, \
-    QGradient, QPainter, QPen
-from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QAbstractItemView, QListWidgetItem, QTableWidgetItem, \
-    QAction, QMenu, QLabel, QCheckBox, QFileDialog
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QCheckBox, QFileDialog
 
-from search_local_music import SearchLocalMusic
+from src.service.search_local_music import SearchLocalMusic
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 

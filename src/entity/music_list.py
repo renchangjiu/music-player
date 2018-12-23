@@ -1,33 +1,41 @@
 import json, os
 from datetime import datetime
 
-import global_variable as glo_var
-from MP3Parser import MP3
-from music import Music
-from play_list import PlayList
+from src.service import global_variable as glo_var
+from src.service.MP3Parser import MP3
+from src.entity.music import Music
+from src.service.play_list import PlayList
 
 
 class MusicList:
     """歌单"""
 
     def __init__(self):
+        # 歌单id
+        self.__id = -1
         # 歌单名
         self.__name = ""
         # 创建日期(字符串, 形如: "2018-12-12")
-        self.__date = ""
+        self.__created = ""
         # 播放次数
         self.__play_count = 0
         # 歌单音乐
         self.__musics = []
 
+    def get_id(self):
+        return self.__id
+
+    def set_id(self, _id):
+        self.__id = _id
+
     def get_name(self):
         return self.__name
 
-    def size(self):
-        return len(self.__musics)
-
     def set_name(self, name):
         self.__name = name
+
+    def size(self):
+        return len(self.__musics)
 
     def add(self, music):
         self.__musics.append(music)
@@ -38,11 +46,11 @@ class MusicList:
     def set_play_count(self, count):
         self.__play_count = count
 
-    def get_date(self):
-        return self.__date
+    def get_created(self):
+        return self.__created
 
-    def set_date(self, date_str):
-        self.__date = date_str
+    def set_created(self, date_str):
+        self.__created = date_str
 
     def get_by_name(self):
         pass
@@ -73,10 +81,12 @@ class MusicList:
         return -1
 
     def __str__(self):
-        ret = "MusicList name: %s, size: %d [" % (self.__name, self.size())
+        ret = "MusicList [\n\tid: %s\n\tname: %s,\n\tplay_count: %d\n\tcreted: %s\n\tsize: %d" % (
+            self.__id, self.__name, self.__play_count, self.__created, self.size())
+        ret += "\n\tmusic:[\n"
         for music in self.__musics:
             ret += music.__str__()
-        ret += " ]"
+        ret += "\t]\n]"
         return ret
 
     # music_list to play_list
@@ -96,12 +106,12 @@ class MusicList:
         ml = MusicList.__encode(ml)
 
         # 如果是创建歌单
-        if ml.get_date() == "" or ml.get_date() is None:
+        if ml.get_created() == "" or ml.get_created() is None:
             date = datetime.now().strftime("%F")
-            ml.set_date(date)
+            ml.set_created(date)
         ret = "{"
         ret += '"name": "%s", "size": %d, "play_count": %d, "date": "%s", ' % (
-            ml.get_name(), ml.size(), ml.get_play_count(), ml.get_date())
+            ml.get_name(), ml.size(), ml.get_play_count(), ml.get_created())
         ret += '"musics":['
         for i in range(ml.size()):
             music = ml.get(i)
@@ -152,7 +162,7 @@ class MusicList:
         music_list = MusicList()
         music_list.set_name(json_str["name"].replace('&#34;', '"'))
         music_list.set_play_count(json_str["play_count"])
-        music_list.set_date(json_str["date"])
+        music_list.set_created(json_str["date"])
         m_list = json_str["musics"]
         for i in range(len(m_list)):
             m = Music()
@@ -193,7 +203,7 @@ class MusicList:
         ret = MusicList()
         ret.set_name(self.__name)
         ret.set_play_count(self.__play_count)
-        ret.set_date(self.__date)
+        ret.set_created(self.__created)
         for m in self.__musics:
             ret.add(m)
         return ret
