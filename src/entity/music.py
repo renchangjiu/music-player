@@ -3,6 +3,12 @@ import os.path
 
 class Music:
     def __init__(self):
+        # 歌曲ID
+        self.__id = -1
+
+        # 所属歌单ID
+        self.__mlid = -1
+
         # 文件相关属性
         self.__path = ""
         self.__size = "0KB"
@@ -31,6 +37,18 @@ class Music:
         else:
             ret += ", image: ]"
         return ret
+
+    def get_id(self):
+        return self.__id
+
+    def set_id(self, _id):
+        self.__id = _id
+
+    def get_mlid(self):
+        return self.__mlid
+
+    def set_mlid(self, _mlid):
+        self.__mlid = _mlid
 
     def get_path(self):
         return self.__path

@@ -108,6 +108,7 @@ class MainWindow(QWidget, Ui_Form):
         font = QFont()
         font.setPixelSize(13)
         local_item = QListWidgetItem(self.navigation)
+        local_item.setData(Qt.UserRole, "local")
         local_item.setIcon(QIcon("./resource/image/本地音乐.png"))
         local_item.setText("本地音乐")
         local_item.setFont(font)
@@ -171,6 +172,9 @@ class MainWindow(QWidget, Ui_Form):
 
     # 当点击navigation时, 显示对应页面
     def on_nav_clicked(self, QListWidgetItem_):
+        print(1)
+        print(QListWidgetItem_.data(Qt.UserRole))
+        print(2)
         text = QListWidgetItem_.text()
         if text == "创建的歌单":
             return
