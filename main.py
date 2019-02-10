@@ -108,7 +108,7 @@ class MainWindow(QWidget, Ui_Form):
         font = QFont()
         font.setPixelSize(13)
         local_item = QListWidgetItem(self.navigation)
-        local_item.setData(Qt.UserRole, "local")
+        # local_item.setData(Qt.UserRole, "LOCALqaq")
         local_item.setIcon(QIcon("./resource/image/本地音乐.png"))
         local_item.setText("本地音乐")
         local_item.setFont(font)
@@ -302,6 +302,11 @@ class MainWindow(QWidget, Ui_Form):
                 self.music_info_widget.show()
             music = self.cur_play_list.get_current_music()
             image_data = MP3(music.get_path()).image
+            # print(image_data)
+            # file = open("./image.jpg", "wb")
+            # file.write(image_data)
+            # file.close()
+
             if image_data == b"":
                 image = QPixmap("./resource/image/default_music_image.png")
             else:
@@ -736,6 +741,9 @@ class MainWindow(QWidget, Ui_Form):
         for row in rows:
             music = self.cur_music_list.get(row)
             musics.append(music)
+
+        # TODO
+
         # 设置子菜单归属于act3
         self.create_collect_menu(musics)
         act3.setMenu(self.collect_menu)

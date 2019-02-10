@@ -3,7 +3,7 @@ create table t_music_list(
   name text  not null, -- 歌单名
   play_count integer  not null, -- 播放次数
   created text  not null, -- 创建时间, yyyy-mm-dd
-  isDeleted int default 0 check ( isDeleted = 1 or isDeleted =0 ) --是否被删除, 1已被删除, 0未被删除
+  is_deleted int default 0 check ( is_deleted = 1 or is_deleted = 0 ) --是否被删除, 1已被删除, 0未被删除
 );
 
 create table t_music (
