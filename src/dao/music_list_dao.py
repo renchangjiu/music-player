@@ -1,4 +1,4 @@
-import sqlite3
+import sqlite3, time
 from src.entity.music_list import MusicList
 
 
@@ -25,7 +25,7 @@ class MusicListDao:
             music_lists.append(music_list)
         return music_lists
 
-    def select_by_id(self, _id) -> MusicList:
+    def select_by_id(self, _id: int) -> MusicList:
         """
         select music list by id
 
@@ -40,7 +40,7 @@ class MusicListDao:
         music_list = self.__row_2_music_list(row)
         return music_list
 
-    def logic_delete(self, _id):
+    def logic_delete(self, _id: int):
         try:
             sql = "update t_music_list set is_deleted = 1 where id = ?"
             cursor = self.conn.cursor()
@@ -52,7 +52,21 @@ class MusicListDao:
         except sqlite3.OperationalError as err:
             print(err)
 
-    def __row_2_music_list(self, row) -> MusicList:
+    def insert(self, music_list: MusicList):
+        """
+        id integer primary key autoincrement,
+          name text  not null, -- 歌单名
+          play_count integer  not null, -- 播放次数
+          created text  not null, -- 创建时间, yyyy-mm-dd
+          is_deleted int default 0 check ( is_deleted = 1 or is_deleted = 0 ) """
+        sql = "insert into t_music_list values (null, ?, 0, ?, 0)"
+        self.conn.execute(sql, (music_list.get_name(), music_list.get_created(),))
+        self.conn.commit()
+
+    def __music_list_2_row(self, ml: MusicList) -> tuple:
+        return ml.get_name(), ml.get_created(),
+
+    def __row_2_music_list(self, row: tuple) -> MusicList:
         """
         把表中查询到的一行数据封装成一个 MusicList 对象
         :param row: 一行数据
@@ -71,6 +85,12 @@ class MusicListDao:
 
 
 if __name__ == "__main__":
+    dao = MusicListDao()
     # MusicListDao().select_by_id(1)
     # MusicListDao().select_list()
-    MusicListDao().logic_delete(20)
+    # MusicListDao().logic_delete(20)
+    # music_list = MusicList()
+    # music_list.set_name("n4")
+    # music_list.set_created(time.strftime("%Y-%m-%d"))
+    # dao.insert(music_list)
+

@@ -9,7 +9,7 @@ class MusicDao:
         self.database = "../../data/data.db"
         self.conn = sqlite3.connect(self.database)
 
-    def select_by_mlid(self, music_list_id):
+    def select_by_mlid(self, music_list_id: str):
         sql = "select * from t_music where mlid = ?"
         musics = []
         cursor = self.conn.cursor()
@@ -21,7 +21,7 @@ class MusicDao:
             musics.append(music)
         return musics
 
-    def select_by_id(self, _id):
+    def select_by_id(self, _id: str):
         sql = "select * from t_music where id = ?"
         cursor = self.conn.cursor()
         cursor.execute(sql, (_id,))
@@ -30,7 +30,7 @@ class MusicDao:
         music = self.__row_2_music(ret)
         return music
 
-    def insert(self, music):
+    def insert(self, music: Music):
         """  id integer primary key autoincrement,
               mlid integer not null, --关联的歌单id
               path text not null, --文件绝对路径
@@ -44,12 +44,17 @@ class MusicDao:
         self.conn.execute(sql, self.__music_2_row(music))
         self.conn.commit()
 
-    def __music_2_row(self, music) -> tuple:
+    def delete(self, _id: int):
+        sql = "delete from t_music where id = ?"
+        self.conn.execute(sql, (_id, ))
+        self.conn.commit()
+
+    def __music_2_row(self, music: Music) -> tuple:
         return (
             music.get_mlid(), music.get_path(), music.get_size(), music.get_image(), music.get_title(),
             music.get_artist(), music.get_album(), music.get_duration())
 
-    def __row_2_music(self, row):
+    def __row_2_music(self, row: tuple):
         """
         把表中查询到的一行数据封装成一个Music对象
         :param row: 一行数据
@@ -69,12 +74,14 @@ class MusicDao:
 
 
 if __name__ == "__main__":
+    dao = MusicDao()
     # MusicDao().select_by_mlid(2)
     # MusicDao().select_by_id(1)
-    m1 = Music()
-    m1.set_path("D:/13595/Music/ClariS - blossom.mp3")
-    m1.set_title("blossom")
-    m1.set_artist("ClariS")
-    m1.set_album("unknown")
-    m1.set_duration(231)
-    MusicDao().insert(m1)
+    # m1 = Music()
+    # m1.set_path("D:/13595/Music/ClariS - blossom.mp3")
+    # m1.set_title("blossom")
+    # m1.set_artist("ClariS")
+    # m1.set_album("unknown")
+    # m1.set_duration(231)
+    # dao.insert(m1)
+    dao.delete(12)

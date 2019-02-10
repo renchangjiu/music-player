@@ -19,7 +19,7 @@ class MusicList:
         self.__created = ""
         # 播放次数
         self.__play_count = 0
-        # 歌单音乐
+        # 所属歌单音乐
         self.__musics = []
 
     def get_id(self):
@@ -51,9 +51,6 @@ class MusicList:
 
     def set_created(self, date_str):
         self.__created = date_str
-
-    def get_by_name(self):
-        pass
 
     def get(self, index):
         return self.__musics[index]
@@ -142,17 +139,6 @@ class MusicList:
             m.set_album(m.get_album().replace('"', "&#34;").replace('\\', "&#92;"))
         return ml
 
-    # 转义回来, 暂时无用
-    @staticmethod
-    def __decode(ml):
-        ml.set_name(ml.get_name().replace('&#34;', '"'))
-        for i in range(ml.size()):
-            m = ml.get(i)
-            m.set_path(m.get_path().replace('&#34;', '"'))
-            m.set_title(m.get_title().replace('&#34;', '"'))
-            m.set_artist(m.get_artist().replace('&#34;', '"'))
-            m.set_album(m.get_album().replace('&#34;', '"'))
-        return ml
 
     @staticmethod
     def from_disk(path):
