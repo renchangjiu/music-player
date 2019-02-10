@@ -1,4 +1,6 @@
 import sqlite3, time
+from datetime import datetime
+
 from src.entity.music_list import MusicList
 
 
@@ -76,7 +78,10 @@ class MusicListDao:
         music_list.set_id(row[0])
         music_list.set_name(row[1])
         music_list.set_play_count(row[2])
-        music_list.set_created(row[3])
+        # 时间戳转字符串
+        _datetime = datetime.fromtimestamp(row[3])
+        _str = _datetime.strftime("%Y-%m-%d")
+        music_list.set_created(_str)
         return music_list
 
     def close(self):

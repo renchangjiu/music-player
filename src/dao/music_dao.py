@@ -9,7 +9,12 @@ class MusicDao:
         self.database = "../../data/data.db"
         self.conn = sqlite3.connect(self.database)
 
-    def select_by_mlid(self, music_list_id: str):
+    def select_by_mlid(self, music_list_id: int) -> list:
+        """
+        查询该歌单所属的所有歌曲
+        :param music_list_id:
+        :return:
+        """
         sql = "select * from t_music where mlid = ?"
         musics = []
         cursor = self.conn.cursor()
@@ -21,7 +26,7 @@ class MusicDao:
             musics.append(music)
         return musics
 
-    def select_by_id(self, _id: str):
+    def select_by_id(self, _id: int) -> Music:
         sql = "select * from t_music where id = ?"
         cursor = self.conn.cursor()
         cursor.execute(sql, (_id,))
@@ -45,8 +50,12 @@ class MusicDao:
         self.conn.commit()
 
     def delete(self, _id: int):
+        """
+        删除该歌曲, 即把该歌曲从所属歌单里删除
+        :param _id: 歌曲ID
+        """
         sql = "delete from t_music where id = ?"
-        self.conn.execute(sql, (_id, ))
+        self.conn.execute(sql, (_id,))
         self.conn.commit()
 
     def __music_2_row(self, music: Music) -> tuple:

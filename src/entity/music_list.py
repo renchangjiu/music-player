@@ -15,8 +15,8 @@ class MusicList:
         self.__id = -1
         # 歌单名
         self.__name = ""
-        # 创建日期(字符串, 形如: "2018-12-12")
-        self.__created = ""
+        # 创建日期(秒级时间戳)
+        self.__created = -1
         # 播放次数
         self.__play_count = 0
         # 所属歌单音乐
