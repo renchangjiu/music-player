@@ -1,6 +1,7 @@
 import sqlite3, time
 from datetime import datetime
 
+from src.entity.music import Music
 from src.entity.music_list import MusicList
 
 

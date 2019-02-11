@@ -35,6 +35,22 @@ class MusicDao:
         music = self.__row_2_music(ret)
         return music
 
+    def select_by_selective(self, music: Music) -> list:
+        sql = "select * from t_music where 1 = 1"
+        if music.get_mlid() != None and music.get_mlid() != "":
+            sql = sql + " and mlid = '" + str(music.get_mlid()) + "'"
+        if music.get_path() != None and music.get_path() != "":
+            sql = sql + " and path = '" + music.get_path() + "'"
+        musics = []
+        cursor = self.conn.cursor()
+        cursor.execute(sql)
+        ret = cursor.fetchall()
+        cursor.close()
+        for row in ret:
+            music = self.__row_2_music(row)
+            musics.append(music)
+        return musics
+
     def insert(self, music: Music):
         """  id integer primary key autoincrement,
               mlid integer not null, --关联的歌单id
@@ -93,4 +109,10 @@ if __name__ == "__main__":
     # m1.set_album("unknown")
     # m1.set_duration(231)
     # dao.insert(m1)
-    dao.delete(12)
+    # dao.delete(12)
+    music = Music()
+    music.set_mlid(1)
+    music.set_path("/path/a.mp3")
+    musics = dao.select_by_selective(music)
+    for music in musics:
+        print(music)
