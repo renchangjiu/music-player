@@ -23,6 +23,33 @@ class MusicService:
         musics = self.music_dao.select_by_selective(music)
         return len(musics) != 0
 
+    def insert(self, music: Music):
+        self.music_dao.insert(music)
+
+    def batch_insert(self, musics: list):
+        self.music_dao.batch_insert(musics)
+
+    def delete(self, _id: int):
+        """
+        删除该歌曲, 即把该歌曲从所属歌单里删除, 硬盘里的文件不会被删除
+        :param _id: 歌曲ID
+        """
+        self.music_dao.delete(_id)
+
+    def batch_delete(self, musics: list):
+        """
+        删除该歌曲, 即把该歌曲从所属歌单里删除, 硬盘里的文件不会被删除
+        :param _id: 歌曲ID
+        """
+        ids = []
+        for music in musics:
+            ids.append(music.get_id())
+        self.music_dao.batch_delete(ids)
+
+    def delete_by_mlid(self, mlid: int):
+        """ 根据歌单ID删除 """
+        self.music_dao.delete_by_mlid(mlid)
+
 
 if __name__ == "__main__":
     service = MusicService()

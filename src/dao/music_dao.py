@@ -6,7 +6,8 @@ from src.entity.music import Music
 class MusicDao:
     def __init__(self):
         # 连接到SQLite数据库, 数据库文件是test.db, 如果文件不存在，会自动在当前目录创建
-        self.database = "../../data/data.db"
+        # self.database = "../../data/data.db"
+        self.database = "./data/data.db"
         self.conn = sqlite3.connect(self.database)
 
     def select_by_mlid(self, music_list_id: int) -> list:
@@ -52,17 +53,15 @@ class MusicDao:
         return musics
 
     def insert(self, music: Music):
-        """  id integer primary key autoincrement,
-              mlid integer not null, --关联的歌单id
-              path text not null, --文件绝对路径
-              size integer, --文件大小, 字节
-              image text, --封面图片路径
-              title text, --MP3 title
-              artist text, --MP3 歌手名
-              album text, --MP3 专辑名
-              duration integer --MP3 时长, 秒"""
-        sql = "insert into t_music values (null, ?, ?, ?, ?, ?, ?, ?, ?)"
+        sql = "insert into t_music values (null, ?, ?, ?, ?, ?, ?, ?)"
         self.conn.execute(sql, self.__music_2_row(music))
+        self.conn.commit()
+
+    def batch_insert(self, musics: list):
+        """ 批量插入 """
+        sql = "insert into t_music values (null, ?, ?, ?, ?, ?, ?, ?)"
+        for music in musics:
+            self.conn.execute(sql, self.__music_2_row(music))
         self.conn.commit()
 
     def delete(self, _id: int):
@@ -74,9 +73,22 @@ class MusicDao:
         self.conn.execute(sql, (_id,))
         self.conn.commit()
 
+    def batch_delete(self, _ids: list):
+        """ 批量删除 """
+        sql = "delete from t_music where id = ?"
+        for _id in _ids:
+            self.conn.execute(sql, (_id,))
+        self.conn.commit()
+
+    def delete_by_mlid(self, mlid: int):
+        """ 根据歌单ID删除 """
+        sql = "delete from t_music where mlid = ?"
+        self.conn.execute(sql, (mlid,))
+        self.conn.commit()
+
     def __music_2_row(self, music: Music) -> tuple:
         return (
-            music.get_mlid(), music.get_path(), music.get_size(), music.get_image(), music.get_title(),
+            music.get_mlid(), music.get_path(), music.get_size(), music.get_title(),
             music.get_artist(), music.get_album(), music.get_duration())
 
     def __row_2_music(self, row: tuple):
@@ -90,11 +102,10 @@ class MusicDao:
         music.set_mlid(row[1])
         music.set_path(row[2])
         music.set_size(row[3])
-        music.set_image(row[4])
-        music.set_title(row[5])
-        music.set_artist(row[6])
-        music.set_album(row[7])
-        music.set_duration(row[8])
+        music.set_title(row[4])
+        music.set_artist(row[5])
+        music.set_album(row[6])
+        music.set_duration(row[7])
         return music
 
 

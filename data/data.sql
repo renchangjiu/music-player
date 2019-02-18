@@ -11,7 +11,6 @@ create table t_music (
   mlid integer not null, --关联的歌单id
   path text not null, --文件绝对路径
   size integer, --文件大小, 字节
-  image text, --封面图片路径
   title text, --MP3 title
   artist text, --MP3 歌手名
   album text, --MP3 专辑名

@@ -100,7 +100,7 @@ class LRC:
 
 
 if __name__ == "__main__":
-    path = "./resource/周杰伦 - 红尘客栈.lrc"
+    path = "../../resource/周杰伦 - 红尘客栈.lrc"
     lrc = LRC(path)
     # print(lrc.get_cur_line(120000))
     print(lrc.show(250000))

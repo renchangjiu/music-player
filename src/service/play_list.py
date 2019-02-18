@@ -25,9 +25,15 @@ class PlayList(QObject):
 
     def __init__(self):
         super().__init__()
-        self.__musics = list()
+        self.__musics = []
         self.play_mode = 2
         self.__current_index = -1
+
+    def get_musics(self):
+        return self.__musics
+
+    def set_musics(self, musics):
+        self.__musics = musics
 
     def set_play_mode(self, PlayList_mode):
         self.play_mode = PlayList_mode
@@ -73,6 +79,9 @@ class PlayList(QObject):
         self.__musics = list()
         self.__current_index = -1
 
+    def is_empty(self):
+        return len(self.__musics) > 0
+
     def contains(self, path):
         for music in self.__musics:
             if music.get_path() == path:
@@ -87,9 +96,9 @@ class PlayList(QObject):
         return -1
 
     # 来自于同歌单且path相同的music将被判断为 相同的music
-    def is_same_music(self, one=Music(), another=Music()):
+    def is_same_music(self, one: Music, another: Music):
         if type(one) == type(another):
-            if one.get_path() == another.get_path() and one.get_from().get_name() == another.get_from().get_name():
+            if one.get_path() == another.get_path() and one.get_mlid() == another.get_mlid():
                 return True
         return False
 
@@ -98,7 +107,7 @@ class PlayList(QObject):
             self.__current_index = index
             self.current_music_change.emit(self.get_current_music())
 
-    def get_current_music(self):
+    def get_current_music(self) -> Music:
         if self.size() > 0:
             return self.__musics[self.__current_index]
 
