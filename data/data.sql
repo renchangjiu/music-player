@@ -22,6 +22,6 @@ insert into t_music_list values (2, 'test22', 1212, '1881-12-12', 0);
 insert into t_music_list values (3, 'test333', 1122, '2008-12-18', 0);
 
 
-insert into t_music values (null, 1, '/path/a.mp3', 20000, '/image/1.png', 'title1', 'artist1', 'album1', '340');
-insert into t_music values (null, 2, '/path/a.mp3', 20000, '/image/1.png', 'title1', 'artist1', 'album1', '340');
-insert into t_music values (null, 3, '/path/a.mp3', 20000, '/image/1.png', 'title1', 'artist1', 'album1', '340');
+insert into t_music values (null, 1, '/path/a.mp3', 20000, 'title1', 'artist1', 'album1', '340');
+insert into t_music values (null, 2, '/path/a.mp3', 20000, 'title1', 'artist1', 'album1', '340');
+insert into t_music values (null, 3, '/path/a.mp3', 20000, 'title1', 'artist1', 'album1', '340');

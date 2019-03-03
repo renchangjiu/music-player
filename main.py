@@ -1095,10 +1095,14 @@ class MainWindow(QWidget, Ui_Form):
                         self.slider_progress.setValue(slider_position)
             # 一曲放完
             if output.find("Exiting... (End of file)") != -1:
-                print("一曲完毕, 播放下一曲")
+                print("当前歌曲播放完毕, 即将播放下一曲")
                 self.info_reset()
                 self.stop_current()
                 self.cur_play_list.next()
+                self.music_list_service.play_count_incr(self.cur_music_list.get_id())
+                self.update_music_list()
+                self.music_list_play_count.setText(
+                    "<p>播放数</p><p style='text-align: right'>%d</p>" % self.cur_music_list.get_play_count())
                 self.show_music_info()
                 self.play()
                 if self.is_mute:

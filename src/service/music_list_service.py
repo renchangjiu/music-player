@@ -36,9 +36,14 @@ class MusicListService:
         music_list.set_musics(musics)
         return music_list
 
-    def logic_delete(self, _id):
+    def logic_delete(self, _id: int):
         """逻辑删除该歌单"""
         self.music_list_dao.logic_delete(_id)
+
+    def play_count_incr(self, _id: int):
+        """ 使该歌单的播放数+1 """
+        self.music_list_dao.play_count_incr(_id)
+
 
     def insert(self, music_list: MusicList):
         """新增歌单, 只需要name属性"""

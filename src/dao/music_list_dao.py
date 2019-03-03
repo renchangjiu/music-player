@@ -69,6 +69,18 @@ class MusicListDao:
         except sqlite3.OperationalError as err:
             print(err)
 
+    def play_count_incr(self, _id: int):
+        try:
+            sql = "update t_music_list set play_count = play_count + 1 where id = ?"
+            cursor = self.conn.cursor()
+            cursor.execute(sql, (_id,))
+            # ret = cursor.fetchall()
+            self.conn.commit()
+            cursor.close()
+            # print(ret)
+        except sqlite3.OperationalError as err:
+            print(err)
+
     def insert(self, music_list: MusicList):
         """
         id integer primary key autoincrement,
