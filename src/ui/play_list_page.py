@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QWidget, QTableWidgetItem, \
 from PyQt5 import QtCore, QtGui, QtWidgets
 from src.service import util, global_variable as glo_var
 from src.entity.music_list import MusicList
+from src.service.music_list_service import MusicListService
 from src.service.tablewidget import TableWidget
 
 
@@ -127,7 +128,7 @@ class PlayListPage(QWidget, Ui_Form):
         Ui_Form.__init__(self)
         self.setupUi(self)
         self.setParent(parent)
-
+        self.music_list_service = MusicListService()
         self.__init_ui()
         self.__init_table_widget_ui()
         self.__set_table_widget_width()
@@ -159,26 +160,27 @@ class PlayListPage(QWidget, Ui_Form):
         # 若点击的是链接按钮, 则跳转到对应的歌单页面
         if column == 3:
             music = self.parent().cur_play_list.get(row)
-            name = music.get_from().get_name()
+            music_list = self.music_list_service.get_music_list_by_id(music.get_mlid())
             self.parent().navigation.setFocus()
             self.parent().navigation.setCurrentRow(2)
 
-            items = self.parent().navigation.findItems(name, Qt.MatchCaseSensitive)
-            if len(items) == 1:
-                item = items[0]
-                text = item.text()
+            items = self.parent().navigation.findItems(music_list.get_name(), Qt.MatchCaseSensitive)
+            item = None
+            for item_ in items:
+                data = item_.data(Qt.UserRole)
+                if music.get_mlid() == data.get_id():
+                    item = item_
+                    break
+
+            if item is not None:
+                data = item.data(Qt.UserRole)
                 self.parent().navigation.setCurrentItem(item)
+                self.parent().update_music_list(data.get_id())
                 # 若是本地音乐
-                if name == "本地音乐":
-                    path = glo_var.local_musics_path
+                if data.get_id() == 0:
                     self.parent().stackedWidget_2.setCurrentWidget(self.parent().local_music_page)
-                    self.parent().cur_music_list = MusicList.from_disk(path + text)
-                    self.parent().cur_whole_music_list = MusicList.from_disk(path + text)
                 # 若是其他歌单
                 else:
-                    path = glo_var.music_list_path
-                    self.parent().cur_music_list = MusicList.from_disk(path + text)
-                    self.parent().cur_whole_music_list = MusicList.from_disk(path + text)
                     self.parent().stackedWidget_2.setCurrentWidget(self.parent().music_list_detail)
                     self.parent().show_musics_data()
             self.hide()
@@ -203,7 +205,7 @@ class PlayListPage(QWidget, Ui_Form):
             music = self.parent().cur_play_list.get(row)
             musics.append(music)
         # 设置子菜单归属于act2
-        self.create_collect_menu(rows)
+        self.create_collect_menu(musics)
         act2.setMenu(self.collect_menu)
         self.play_list_menu.addMenu(self.collect_menu)
         # 只选中了一行
@@ -221,7 +223,7 @@ class PlayListPage(QWidget, Ui_Form):
         cur = self.parent().cur_play_list.get_current_music()
         playing = False
         for music in musics:
-            if music.get_path() == cur.get_path() and music.get_from().get_name() == cur.get_from().get_name():
+            if music.get_path() == cur.get_path() and music.get_mlid() == cur.get_mlid():
                 playing = True
 
         for music in musics:
@@ -238,16 +240,16 @@ class PlayListPage(QWidget, Ui_Form):
             self.parent().btn_start.setStyleSheet("QPushButton{border-image:url(./resource/image/播放.png)}" +
                                                   "QPushButton:hover{border-image:url(./resource/image/播放2.png)}")
 
-    def create_collect_menu(self, rows):
+    def create_collect_menu(self, musics: list):
         self.collect_menu.clear()
         act0 = self.create_widget_action("./resource/image/添加歌单.png", "创建新歌单")
         self.collect_menu.addAction(act0)
         self.collect_menu.addSeparator()
-        music_lists = util.get_music_lists()
-        for music_list in music_lists:
-            act = self.create_widget_action("./resource/image/歌单.png", music_list.get_name())
+        all_music_list = self.music_list_service.get_all_music_list()
+        for music_list in all_music_list:
+            act = self.create_widget_action("./resource/image/歌单.png", music_list.get_name(), music_list)
             self.collect_menu.addAction(act)
-            act.triggered.connect(lambda: self.parent().on_acts_choose(rows))
+            act.triggered.connect(lambda: self.parent().on_acts_choose(musics))
 
     def __init_ui(self):
         self.setWindowFlag(Qt.FramelessWindowHint)
@@ -343,9 +345,11 @@ class PlayListPage(QWidget, Ui_Form):
         # print("position:", self.tableWidget.verticalScrollBar().sliderPosition())
         # self.tableWidget.verticalScrollBar().setSliderPosition(self.tableWidget.verticalScrollBar().maximum() / 2)
 
-    def create_widget_action(self, icon, text):
+    def create_widget_action(self, icon, text, data=None):
         act = QWidgetAction(self)
         act.setText(text)
+        if data is not None:
+            act.setData(data)
         widget = QWidget(self)
         layout = QHBoxLayout()
         layout.setContentsMargins(13, -1, -1, 11)

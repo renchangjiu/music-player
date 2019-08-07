@@ -3,12 +3,15 @@ import os.path
 
 class Music:
     def __init__(self):
+        # 歌曲ID
+        self.__id = -1
+
+        # 所属歌单ID
+        self.__mlid = -1
+
         # 文件相关属性
         self.__path = ""
         self.__size = "0KB"
-
-        # 来自于哪个歌单, 用于确定播放列表中的歌曲来自于哪个歌单
-        self.__from = None
 
         # mp3相关属性
         self.__image = b""
@@ -31,6 +34,18 @@ class Music:
         else:
             ret += ", image: ]"
         return ret
+
+    def get_id(self):
+        return self.__id
+
+    def set_id(self, _id):
+        self.__id = _id
+
+    def get_mlid(self):
+        return self.__mlid
+
+    def set_mlid(self, _mlid):
+        self.__mlid = _mlid
 
     def get_path(self):
         return self.__path
@@ -77,15 +92,8 @@ class Music:
     def set_size(self, size):
         self.__size = size
 
-    def get_from(self):
-        return self.__from
-
-    def set_from(self, MusicList_):
-        self.__from = MusicList_
-
 
 if __name__ == "__main__":
     m = Music()
     m.set_path("d:/test.mp3")
     print(m.get_path())
-    print(m.get_image())

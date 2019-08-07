@@ -115,7 +115,7 @@ class ID3V2:
 
 
 # 获取ID3V1信息
-class ID3V1():
+class ID3V1:
     def __init__(self, path):
         file = open(path, "rb")
         start_index = os.path.getsize(path) - 128

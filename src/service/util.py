@@ -1,8 +1,6 @@
-import os
-
 from PyQt5.QtGui import QFontMetrics
 
-from src.service import global_variable as gv
+from src.entity.music import Music
 from src.entity.music_list import MusicList
 
 
@@ -32,27 +30,12 @@ def format_time(second):
 
 
 # 返回以KB 或 MB表示的文件大小, size: 字节数
-def format_size(size):
-    pass
-
-
-# 读取创建的歌单
-def get_music_lists():
-    music_lists = []
-    names = os.listdir(gv.music_list_path)
-    for name in names:
-        music_lists.append(MusicList.from_disk(gv.music_list_path + name))
-    return music_lists
-
-
-# 把字符串中的特殊字符转义
-def encode(str_=""):
-    return str_.replace('"', "&#34;").replace('\\', "&#92;")
-
-
-# 反转义
-def decode(str_=""):
-    return str_.replace("&#34;", '"').replace('&#92;', "\\")
+def format_size(size: int) -> str:
+    if size < 1024 * 1024:
+        size = str(int(size / 1024)) + "KB"
+    else:
+        size = str(round(size / 1024 / 1024, 1)) + "MB"
+    return size
 
 
 def search_local_music():
@@ -76,6 +59,16 @@ def __sub(s, max_width, fm):
         return s + "..."
     else:
         return __sub(s[0:-1], max_width, fm)
+
+
+def convert_music_list(obj) -> MusicList:
+    """ 把参数转换成MusicList, 以方便IDE提示(参数必须是MusicList类型)"""
+    return obj
+
+
+def convert_music(obj) -> Music:
+    """ 把参数转换成Music, 以方便IDE提示(参数必须是Music类型)"""
+    return obj
 
 
 if __name__ == "__main__":

@@ -109,7 +109,8 @@ class AddMusicListDialog(QtWidgets.QDialog, Ui_Dialog):
         self.lineEdit.textChanged.connect(self.make_confirm_enable)
 
     def make_confirm_enable(self):
-        if len(self.lineEdit.text()) != 0:
+        text = self.lineEdit.text()
+        if len(text.strip()) != 0:
             self.confirm.setEnabled(True)
             self.confirm.setStyleSheet(
                 "QPushButton{width:80px; height:28px;color:#ffffff;border: 1px solid #e1e1e2;background-color:#0c73c2;border-radius:5px}" +

@@ -291,10 +291,13 @@ class ChooseMusicDirPage(QtWidgets.QDialog, Ui_Dialog):
             thread.start()
 
     def begin(self):
+        self.parent().begin_search()
         self.parent().label_search_state.setText("正在更新本地音乐列表...")
 
     def end(self):
+        self.parent().end_search()
         self.parent().label_search_state.setText("更新完成")
+        # 发出信号, 通知父窗口更新本地音乐
         self.local_musics_change.emit()
 
     def sub_thread(self, search_local_music, change_paths):
