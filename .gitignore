@@ -8,3 +8,4 @@ resource/config/
 *.svn-base
 .svn/wc.db
 .svn/wc.db-journal
+data/data.db
