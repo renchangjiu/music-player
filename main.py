@@ -8,9 +8,11 @@ from PyQt5.QtGui import QPixmap, QFont, QIcon, QImage, QFontMetrics, QCursor, QC
 from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QListWidgetItem, QTableWidgetItem, \
     QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout, QTextEdit
 
+from src.service.check_program import CheckProgram
 from src.neteaseCloudMusicApi.api import NeteaseCloudMusicApi
 from src.service.LRCParser import LRC
 from src.service.MP3Parser import MP3
+from src.service.global_variable import GlobalVar
 from src.service.main_widget import Ui_Form
 from src.entity.music_list import MusicList
 from src.service.music_list_service import MusicListService
@@ -24,10 +26,12 @@ from src.service.search_local_music import SearchLocalMusic
 from src.ui.toast import Toast
 
 
+# TODO 无歌单时的业务处理
+# TODO 唯一歌单无歌曲的业务处理
 # TODO 滚动歌词: verticalScrollBar.setValue()
 # TODO 如果要播放的文件不存在:  0. 右键播放, 1. 正在的播放的文件被删除, 4. 双击歌单列表, 但目标文件已被删除,
 #  5. 双击播放列表, ..., 6. 要删除已被删除的文件
-# TODO tablewidget 列宽可调节
+# TODO table widget 列宽可调节
 # TODO UI细节调整
 # todo 歌单图片
 # TODO 重构 & 拆分入口文件
@@ -142,7 +146,7 @@ class MainWindow(QWidget, Ui_Form):
             self.navigation.addItem(item)
 
         # 启动时默认选中第一个歌单
-        self.navigation.setCurrentRow(2)
+        self.navigation.setCurrentRow(0)
         cur_id = self.navigation.currentItem().data(Qt.UserRole).get_id()
 
         self.update_music_list(cur_id)
@@ -640,21 +644,21 @@ class MainWindow(QWidget, Ui_Form):
         self.btn_return.setCursor(Qt.PointingHandCursor)
         s = "<p>111阿斯蒂芬</p><br/><p>222发个好豆腐干</p><br/><p>333地方活佛济公</p><br/><p>444打成供东方红</p><br/><p>555宽高画更健康换个</p><br/>" \
             # "<p>666地方规划局和</p><br/><p>777飞规划局规划局</p><br/><p>88积分换个房管局8</p><br/><p>9</p><br/><p>10</p><br/><p>11</p><br/>" \
-            # "<p>12</p><p>13</p><p>14</p><p>15</p>" \
-            # "<p>16</p><p>17</p><p>18</p>" \
-            # "<p>19</p><p>20</p><p>21</p><p>22</p><p>23</p><p>24</p><p>25</p><p style='color:white'>26</p><p>27</p>" \
-            # "<p>28</p><p>29</p><p>30</p><p>31</p><p>32</p><p>33</p><p>34</p><p>35</p><p>36</p><p>37</p><p>&nbsp;</p><p>38</p><p>&nbsp;</p><p>壊すわ</p>"\
-            # "<p>666地方规划局和</p><br/><p>777飞规划局规划局</p><br/><p>88积分换个房管局8</p><br/><p>9</p><br/><p>10</p><br/><p>11</p><br/>" \
-            # "<p>12</p><p>13</p><p>14</p><p>15</p>" \
-            # "<p>16</p><p>17</p><p>18</p>" \
-            # "<p>19</p><p>20</p><p>21</p><p>22</p><p>23</p><p>24</p><p>25</p><p style='color:white'>26</p><p>27</p>" \
-            # "<p>28</p><p>29</p><p>30</p><p>31</p><p>32</p><p>33</p><p>34</p><p>35</p><p>36</p><p>37</p><p>&nbsp;</p><p>38</p><p>&nbsp;</p><p>壊すわ</p>"\
-            # "<p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p><p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p>" \
-            # "<p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p><p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p>" \
-            # "<p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p><p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p>" \
-            # "<p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p><p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p>" \
-            # "<p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p><p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p>" \
-            # "<p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p><p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p>"
+        # "<p>12</p><p>13</p><p>14</p><p>15</p>" \
+        # "<p>16</p><p>17</p><p>18</p>" \
+        # "<p>19</p><p>20</p><p>21</p><p>22</p><p>23</p><p>24</p><p>25</p><p style='color:white'>26</p><p>27</p>" \
+        # "<p>28</p><p>29</p><p>30</p><p>31</p><p>32</p><p>33</p><p>34</p><p>35</p><p>36</p><p>37</p><p>&nbsp;</p><p>38</p><p>&nbsp;</p><p>壊すわ</p>"\
+        # "<p>666地方规划局和</p><br/><p>777飞规划局规划局</p><br/><p>88积分换个房管局8</p><br/><p>9</p><br/><p>10</p><br/><p>11</p><br/>" \
+        # "<p>12</p><p>13</p><p>14</p><p>15</p>" \
+        # "<p>16</p><p>17</p><p>18</p>" \
+        # "<p>19</p><p>20</p><p>21</p><p>22</p><p>23</p><p>24</p><p>25</p><p style='color:white'>26</p><p>27</p>" \
+        # "<p>28</p><p>29</p><p>30</p><p>31</p><p>32</p><p>33</p><p>34</p><p>35</p><p>36</p><p>37</p><p>&nbsp;</p><p>38</p><p>&nbsp;</p><p>壊すわ</p>"\
+        # "<p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p><p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p>" \
+        # "<p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p><p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p>" \
+        # "<p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p><p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p>" \
+        # "<p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p><p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p>" \
+        # "<p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p><p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p>" \
+        # "<p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p><p>asdfghjkl</p><p>asdgdsg</p><p>asdgsdgsdg</p>"
         # min 总是0
         min = self.scrollArea.verticalScrollBar().minimum()
         _max = self.scrollArea.verticalScrollBar().maximum()
@@ -1128,7 +1132,6 @@ class MainWindow(QWidget, Ui_Form):
         print(self.scrollArea.verticalScrollBar().maximum())
         pass
 
-
     def error_output(self):
         while self.process.canReadLine():
             output = str(self.process.readLine())
@@ -1209,7 +1212,8 @@ class MainWindow(QWidget, Ui_Form):
 
 
 def main():
-    init_install()
+    # init_install()
+    CheckProgram.check_program()
     app = QtWidgets.QApplication(sys.argv)
     # qss = open("./resource/qss/main.qss", "r", encoding="utf-8")
     # read = qss.read()
@@ -1218,18 +1222,6 @@ def main():
     my_window.show()
     sys.exit(app.exec_())
 
-
-def init_install():
-    if not os.path.exists("./data/install-flag"):
-        with open("./data/install-flag", "w", encoding="utf-8") as p:
-            pass
-        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-                             r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
-        windows_music_path = winreg.QueryValueEx(key, "My Music")[0]
-        if not os.path.exists("./data/config.ini"):
-            config_file = open("./data/config.ini", "w", encoding="utf-8")
-            config_file.write("[music-path]\npath=%s*checked" % windows_music_path)
-            config_file.close()
 
 # 1184
 if __name__ == "__main__":
