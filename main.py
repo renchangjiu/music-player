@@ -26,8 +26,6 @@ from src.service.search_local_music import SearchLocalMusic
 from src.ui.toast import Toast
 
 
-# TODO 无歌单时的业务处理
-# TODO 唯一歌单无歌曲的业务处理
 # TODO 滚动歌词: verticalScrollBar.setValue()
 # TODO 如果要播放的文件不存在:  0. 右键播放, 1. 正在的播放的文件被删除, 4. 双击歌单列表, 但目标文件已被删除,
 #  5. 双击播放列表, ..., 6. 要删除已被删除的文件
@@ -371,12 +369,12 @@ class MainWindow(QWidget, Ui_Form):
 
         # nav
         self.navigation.itemClicked.connect(self.on_nav_clicked)
+        self.navigation.customContextMenuRequested.connect(self.on_nav_right_click)  # 右键菜单
         self.btn_zoom.installEventFilter(self)
         self.btn_music_image.installEventFilter(self)
         self.music_image_label.installEventFilter(self)
         self.btn_music_image.clicked.connect(self.change_to_play_page)
         self.btn_add_music_list.clicked.connect(self.show_add_music_list_page)
-        self.navigation.customContextMenuRequested.connect(self.on_nav_right_click)  # 右键菜单
         self.add_music_list_dialog.cancel.clicked.connect(self.cancel_to_add_music_list)
         self.add_music_list_dialog.confirm.clicked.connect(self.confirm_to_add_music_list)
 
@@ -736,7 +734,7 @@ class MainWindow(QWidget, Ui_Form):
     def on_nav_right_click(self, pos):
         item = self.navigation.itemAt(pos)
         data = item.data(Qt.UserRole)
-        if type(data) == MusicList:
+        if type(data) == MusicList and data.get_id() != 0 and data.get_name() != "本地音乐":
             self.nav_menu.clear()
             act1 = self.create_widget_action("./resource/image/nav-播放.png", "播放(Enter)")
             act2 = self.create_widget_action("./resource/image/导出.png", "导出歌单")
