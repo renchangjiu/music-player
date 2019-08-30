@@ -32,7 +32,7 @@ class SearchLocalMusic(QObject):
         print(len(musics), "  ", musics)
         SearchLocalMusic.__to_database(musics)
 
-    def search_in_path(self, search_paths):
+    def search_in_path(self, search_paths: list):
         self.begin_search.emit()
         # 以 .mp3结尾, 大于100kb的文件
         paths = set()
@@ -63,7 +63,7 @@ class SearchLocalMusic(QObject):
 
     @staticmethod
     # 递归遍历path下的文件, 把符合规则的文件路径加入到paths
-    def __loop_all(path, paths):
+    def __loop_all(path: str, paths: set):
         try:
             listdir = os.listdir(path)
             for f in listdir:
@@ -82,7 +82,7 @@ class SearchLocalMusic(QObject):
     @staticmethod
     # paths: 文件路径列表
     # musics: Music列表
-    def __get_mp3_info(paths, musics):
+    def __get_mp3_info(paths: list, musics: list):
         for path in paths:
             try:
                 mp3 = MP3(path)

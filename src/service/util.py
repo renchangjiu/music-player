@@ -1,11 +1,11 @@
-from PyQt5.QtGui import QFontMetrics
+from PyQt5.QtGui import QFontMetrics, QFont
 
 from src.entity.music import Music
 from src.entity.music_list import MusicList
 
 
-# 把秒级时间格式化为mm:ss形式, second: str
-def format_time(second):
+# 把秒级时间格式化为mm:ss形式
+def format_time(second: int):
     second = int(float(second))
     min = "00"
     sec = "00"
@@ -42,8 +42,8 @@ def search_local_music():
     pass
 
 
-def get_elided_text(QFont_, str_, max_width):
-    fm = QFontMetrics(QFont_)
+def get_elided_text(font: QFont, str_: str, max_width: int):
+    fm = QFontMetrics(font)
     # 计算字符串宽度
     w = fm.width(str_)
     # 当字符串宽度大于最大宽度时进行转换

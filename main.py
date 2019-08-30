@@ -4,7 +4,8 @@ import winreg
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, QTimer, QProcess, QEvent, QSize, QModelIndex, QObject
-from PyQt5.QtGui import QPixmap, QFont, QIcon, QImage, QFontMetrics, QCursor, QCloseEvent, QMouseEvent, QMovie
+from PyQt5.QtGui import QPixmap, QFont, QIcon, QImage, QFontMetrics, QCursor, QCloseEvent, QMouseEvent, QMovie, \
+    QPaintEvent
 from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QListWidgetItem, QTableWidgetItem, \
     QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout, QTextEdit
 
@@ -184,8 +185,8 @@ class MainWindow(QWidget, Ui_Form):
             """)
 
     # 当点击navigation时, 显示对应页面
-    def on_nav_clicked(self, _QListWidgetItem):
-        data = _QListWidgetItem.data(Qt.UserRole)
+    def on_nav_clicked(self, list_item: QListWidgetItem):
+        data = list_item.data(Qt.UserRole)
         if data is None:
             return
 
@@ -515,7 +516,7 @@ class MainWindow(QWidget, Ui_Form):
         # print("value: " + str(self.scrollArea.verticalScrollBar().value()))
         pass
 
-    def paintEvent(self, QPaintEvent_):
+    def paintEvent(self, event: QPaintEvent):
         self.btn_zoom.setGeometry(self.width() - 18, self.height() - 18, 14, 14)
         self.set_tb_local_music_layout()
         if self.cur_music_list is not None:
@@ -524,7 +525,7 @@ class MainWindow(QWidget, Ui_Form):
     def init_ui(self):
         self.setWindowIconText("qaq")
         self.setWindowIcon(QIcon("./resource/image/app-icon.png"))
-        # font = QFont("微软雅黑", 10, 50)
+        # font = QFont("Consolas", 10, 50)
         # self.musics.setFont(font)
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.main_stacked_widget.setCurrentWidget(self.main_page)
@@ -793,8 +794,6 @@ class MainWindow(QWidget, Ui_Form):
         for row in rows:
             music = self.cur_music_list.get(row)
             musics.append(music)
-
-        # TODO
 
         # 设置子菜单归属于act3
         self.create_collect_menu(musics)
