@@ -1,19 +1,16 @@
 import re, os, sys
 import threading
-import winreg
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, QTimer, QProcess, QEvent, QSize, QModelIndex, QObject
 from PyQt5.QtGui import QPixmap, QFont, QIcon, QImage, QFontMetrics, QCursor, QCloseEvent, QMouseEvent, QMovie, \
     QPaintEvent
 from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QListWidgetItem, QTableWidgetItem, \
-    QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout, QTextEdit
+    QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout
 
 from src.service.check_program import CheckProgram
-from src.neteaseCloudMusicApi.api import NeteaseCloudMusicApi
 from src.service.LRCParser import LRC
 from src.service.MP3Parser import MP3
-from src.service.global_variable import GlobalVar
 from src.service.main_widget import Ui_Form
 from src.entity.music_list import MusicList
 from src.service.music_list_service import MusicListService
