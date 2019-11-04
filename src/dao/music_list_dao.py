@@ -1,15 +1,14 @@
-import sqlite3, time
+import sqlite3
 from datetime import datetime
 
-from src.entity.music import Music
+from src.common.app_attribute import AppAttribute
 from src.entity.music_list import MusicList
 
 
 class MusicListDao:
     def __init__(self):
         # 连接到SQLite数据库, 数据库文件是test.db, 如果文件不存在，会自动在当前目录创建
-        self.database = "./data/data.db"
-        # self.database = "../../data/data.db"
+        self.database = AppAttribute.db_path + "/data.db"
         self.conn = sqlite3.connect(self.database)
 
     def select_list(self) -> list:
@@ -127,4 +126,3 @@ if __name__ == "__main__":
     # music_list.set_created(time.strftime("%Y-%m-%d"))
     # dao.insert(music_list)
     # dao.select_by_id_include_music()
-

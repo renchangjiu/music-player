@@ -1,24 +1,18 @@
 import os, shutil
-from src.service.global_variable import GlobalVar
+from src.common.app_attribute import AppAttribute
+from src.entity.music_list import MusicList
+from src.service.music_service import MusicService
 
 
 class CheckProgram:
 
-    # def init_install():
-    #     if not os.path.exists("./data/install-flag"):
-    #         with open("./data/install-flag", "w", encoding="utf-8") as p:
-    #             pass
-    #         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-    #                              r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
-    #         windows_music_path = winreg.QueryValueEx(key, "My Music")[0]
-    #         if not os.path.exists("./data/config.ini"):
-    #             config_file = open("./data/config.ini", "w", encoding="utf-8")
-    #             config_file.write("[music-path]\npath=%s*checked" % windows_music_path)
-    #             config_file.close()
-
-    # 检查程序完整性
     @staticmethod
     def check_program():
-        db_path = GlobalVar.root_path + "/data/data.db"
-        if not os.path.exists(db_path):
-            shutil.copyfile(GlobalVar.resource_path + "/empty.db", db_path)
+        """检查程序完整性"""
+        db_file = AppAttribute.db_path + "/data.db"
+        if not os.path.exists(db_file):
+            shutil.copyfile(AppAttribute.db_path + "/empty.db", db_file)
+            music_service = MusicService()
+            path = AppAttribute.res_path + "/洛天依 - 清明上河图.mp3"
+            music = music_service.gen_music_by_path(path, MusicList.default_id)
+            music_service.insert(music)

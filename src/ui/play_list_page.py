@@ -4,8 +4,8 @@ from PyQt5.QtWidgets import QWidget, QTableWidgetItem, \
     QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from src.service import util, global_variable as glo_var
-from src.entity.music_list import MusicList
+
+from src.service import util
 from src.service.music_list_service import MusicListService
 from src.service.tablewidget import TableWidget
 
@@ -328,7 +328,7 @@ class PlayListPage(QWidget, Ui_Form):
             # self.tableWidget.setItem(i, 3, icon_item)
             self.tableWidget.setCellWidget(i, 3, self.btn_link)
 
-            self.tableWidget.setItem(i, 4, QTableWidgetItem(str(util.format_time(music.get_duration()))))
+            self.tableWidget.setItem(i, 4, QTableWidgetItem(util.format_time(music.get_duration())))
 
         # 为当前音乐设置喇叭图标
         icon_label = QLabel()

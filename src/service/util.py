@@ -5,7 +5,7 @@ from src.entity.music_list import MusicList
 
 
 # 把秒级时间格式化为mm:ss形式
-def format_time(second: int):
+def format_time(second: int) -> str:
     second = int(float(second))
     min = "00"
     sec = "00"

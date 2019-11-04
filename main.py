@@ -8,6 +8,8 @@ from PyQt5.QtGui import QPixmap, QFont, QIcon, QImage, QFontMetrics, QCursor, QC
 from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QListWidgetItem, QTableWidgetItem, \
     QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout
 
+from src.common.app_attribute import AppAttribute
+
 from src.service.check_program import CheckProgram
 from src.service.LRCParser import LRC
 from src.service.MP3Parser import MP3
@@ -1206,8 +1208,6 @@ class MainWindow(QWidget, Ui_Form):
 
 
 def main():
-    # init_install()
-    CheckProgram.check_program()
     app = QtWidgets.QApplication(sys.argv)
     # qss = open("./resource/qss/main.qss", "r", encoding="utf-8")
     # read = qss.read()
@@ -1219,5 +1219,6 @@ def main():
 
 # 1184
 if __name__ == "__main__":
+    AppAttribute.init(sys.argv)
+    CheckProgram.check_program()
     main()
-    # init_install()

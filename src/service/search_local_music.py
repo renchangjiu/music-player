@@ -49,7 +49,7 @@ class SearchLocalMusic(QObject):
     def __to_database(musics: list):
         music_service = MusicService()
         # 先把原先的本地音乐删除
-        music_service.delete_by_mlid(0)
+        music_service.delete_by_mid(0)
         music_service.batch_insert(musics)
 
     @staticmethod

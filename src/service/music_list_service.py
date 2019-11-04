@@ -44,7 +44,6 @@ class MusicListService:
         """ 使该歌单的播放数+1 """
         self.music_list_dao.play_count_incr(_id)
 
-
     def insert(self, music_list: MusicList):
         """新增歌单, 只需要name属性"""
         music_list.set_created(int(time.time()))
@@ -65,6 +64,7 @@ class MusicListService:
             if path == music.get_path():
                 return True
         return False
+
     # return len(musics) != 0
 
     def index_of(self, music: Music, music_list: MusicList):

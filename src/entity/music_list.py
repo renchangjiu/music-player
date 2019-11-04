@@ -4,6 +4,9 @@ from src.entity.music import Music
 class MusicList:
     """歌单"""
 
+    # 默认歌单(即本地歌单)ID
+    default_id = 0
+
     def __init__(self):
         # 歌单id
         self.__id = -1

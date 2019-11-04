@@ -1,4 +1,28 @@
+import os
 import sqlite3
+
+
+# 统计代码行数, 包括注释及空行
+def count_code_lines():
+    root = os.path.abspath(os.pardir)
+    dirs = [root]
+    py_files = []
+    while len(dirs) > 0:
+        head = dirs.pop(0)
+        list_dirs = os.listdir(head)
+        for file in list_dirs:
+            abs_path = head + "/" + file
+            if os.path.isdir(abs_path):
+                dirs.append(abs_path)
+            elif abs_path.endswith("py"):
+                py_files.append(abs_path)
+    count = 0
+    for py_file in py_files:
+        file = open(py_file, mode="r", encoding="utf-8")
+        lines = file.readlines()
+        count = count + len(lines)
+        print(lines)
+    print("总行数(含注释及空行): " + str(count))
 
 
 def select():
@@ -35,4 +59,5 @@ def example():
 
 
 if __name__ == "__main__":
-    select()
+    count_code_lines()
+    # select()

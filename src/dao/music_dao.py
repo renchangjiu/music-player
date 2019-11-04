@@ -1,13 +1,12 @@
 import sqlite3
 
 from src.entity.music import Music
+from src.common.app_attribute import AppAttribute
 
 
 class MusicDao:
     def __init__(self):
-        # 连接到SQLite数据库, 数据库文件是test.db, 如果文件不存在，会自动在当前目录创建
-        # self.database = "../../data/data.db"
-        self.database = "./data/data.db"
+        self.database = AppAttribute.db_path + "/data.db"
         self.conn = sqlite3.connect(self.database)
 
     def select_by_mlid(self, music_list_id: int) -> list:
