@@ -889,7 +889,7 @@ class MainWindow(QWidget, Ui_Form):
 
     # 选中歌单列表的音乐, 点击 "从歌单中删除"
     def on_act_del(self, musics: list):
-        self.music_service.batch_delete(musics)
+        self.music_service.batch_delete(list(map(lambda m: m.get_id(), musics)))
         self.update_music_list()
         self.show_musics_data()
         # 清除已选择的项
@@ -900,7 +900,7 @@ class MainWindow(QWidget, Ui_Form):
         # 1.从歌单删除(本地音乐)
         # 2.从播放列表中删除(如果有的话)
         # 3.从硬盘删除
-        self.music_service.batch_delete(musics)
+        self.music_service.batch_delete(list(map(lambda m: m.get_id(), musics)))
         for music in musics:
             os.remove(music.get_path())
             self.cur_play_list.remove(music)

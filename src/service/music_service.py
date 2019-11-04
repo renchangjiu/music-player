@@ -29,21 +29,21 @@ class MusicService:
         m.set_duration(mp3.duration)
         return m
 
-    def get_musics_by_mid(self, music_list_id: int) -> tuple:
+    def get_musics_by_mid(self, mid: int) -> tuple:
         """
         查询该歌单所属的所有歌曲
-        :param music_list_id: int
+        :param mid: 歌单id
         """
-        musics = self.music_dao.select_by_mlid(music_list_id)
+        musics = self.music_dao.select_by_mlid(mid)
         return tuple(musics)
 
     def get_music_by_id(self, _id: int) -> Music:
         """根据ID获取歌曲"""
         return self.music_dao.select_by_id(_id)
 
-    def has_same_music(self, music: Music) -> bool:
+    def has_same_music(self, music_: Music) -> bool:
         """根据歌单ID和path判断 该歌单内是否已经有同一首歌曲"""
-        musics = self.music_dao.select_by_selective(music)
+        musics = self.music_dao.select_by_selective(music_)
         return len(musics) != 0
 
     def insert(self, music_: Music):
@@ -59,14 +59,11 @@ class MusicService:
         """
         self.music_dao.delete(_id)
 
-    def batch_delete(self, musics: list):
+    def batch_delete(self, ids: list):
         """
-        删除该歌曲, 即把该歌曲从所属歌单里删除, 硬盘里的文件不会被删除
-        :param _id: 歌曲ID
+        根据ID列表批量删除歌曲, 即把该歌曲从所属歌单里删除, 硬盘里的文件不会被删除
+        :param ids: 歌曲ID列表
         """
-        ids = []
-        for music in musics:
-            ids.append(music.get_id())
         self.music_dao.batch_delete(ids)
 
     def delete_by_mid(self, mid: int):
