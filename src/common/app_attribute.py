@@ -9,13 +9,13 @@ class AppAttribute(object):
     root = ""
 
     # 数据库文件目录, 如: D:/su/GitHub/music-player/data
-    db_path = ""
+    data_path = ""
 
     # 资源文件目录, D:/su/GitHub/music-player/resource
     res_path = ""
 
     @classmethod
     def init(cls, argv):
-        cls.root = os.path.split(os.path.abspath(argv[0]))[0]
-        cls.db_path = cls.root + "/data"
+        cls.root = os.path.split(os.path.abspath(argv[0]))[0].replace("\\", "/")
+        cls.data_path = cls.root + "/data"
         cls.res_path = cls.root + "/resource"

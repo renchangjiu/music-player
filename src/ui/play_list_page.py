@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QEvent
+from PyQt5.QtCore import Qt, QEvent, QModelIndex
 from PyQt5.QtGui import QPixmap, QColor, QIcon, QCursor, QPainter, QPen
 from PyQt5.QtWidgets import QWidget, QTableWidgetItem, \
     QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout
@@ -140,8 +140,8 @@ class PlayListPage(QWidget, Ui_Form):
         self.tableWidget.doubleClicked.connect(self.on_tb_double_clicked)
 
     # 当存放音乐列表的表格被双击
-    def on_tb_double_clicked(self, QModelIndex_):
-        index = QModelIndex_.row()
+    def on_tb_double_clicked(self, index: QModelIndex):
+        index = index.row()
         self.parent().cur_play_list.set_current_index(index)
         self.parent().label_play_count.setText(str(self.parent().cur_play_list.size()))
         self.parent().stop_current()
@@ -160,24 +160,24 @@ class PlayListPage(QWidget, Ui_Form):
         # 若点击的是链接按钮, 则跳转到对应的歌单页面
         if column == 3:
             music = self.parent().cur_play_list.get(row)
-            music_list = self.music_list_service.get_music_list_by_id(music.get_mlid())
+            music_list = self.music_list_service.get_music_list_by_id(music.mid)
             self.parent().navigation.setFocus()
             self.parent().navigation.setCurrentRow(2)
 
-            items = self.parent().navigation.findItems(music_list.get_name(), Qt.MatchCaseSensitive)
+            items = self.parent().navigation.findItems(music_list.name, Qt.MatchCaseSensitive)
             item = None
             for item_ in items:
                 data = item_.data(Qt.UserRole)
-                if music.get_mlid() == data.get_id():
+                if music.mid == data.id:
                     item = item_
                     break
 
             if item is not None:
                 data = item.data(Qt.UserRole)
                 self.parent().navigation.setCurrentItem(item)
-                self.parent().update_music_list(data.get_id())
+                self.parent().update_music_list(data.id)
                 # 若是本地音乐
-                if data.get_id() == 0:
+                if data.id == 0:
                     self.parent().stackedWidget_2.setCurrentWidget(self.parent().local_music_page)
                 # 若是其他歌单
                 else:
@@ -223,7 +223,7 @@ class PlayListPage(QWidget, Ui_Form):
         cur = self.parent().cur_play_list.get_current_music()
         playing = False
         for music in musics:
-            if music.get_path() == cur.get_path() and music.get_mlid() == cur.get_mlid():
+            if music.path == cur.path and music.mid == cur.mid:
                 playing = True
 
         for music in musics:
@@ -247,7 +247,7 @@ class PlayListPage(QWidget, Ui_Form):
         self.collect_menu.addSeparator()
         all_music_list = self.music_list_service.get_all_music_list()
         for music_list in all_music_list:
-            act = self.create_widget_action("./resource/image/歌单.png", music_list.get_name(), music_list)
+            act = self.create_widget_action("./resource/image/歌单.png", music_list.name, music_list)
             self.collect_menu.addAction(act)
             act.triggered.connect(lambda: self.parent().on_acts_choose(musics))
 
@@ -323,12 +323,12 @@ class PlayListPage(QWidget, Ui_Form):
             # icon_item.setIcon(icon)
             music = play_list.get(i)
             self.tableWidget.setItem(i, 0, QTableWidgetItem("\t"))
-            self.tableWidget.setItem(i, 1, QTableWidgetItem(str(music.get_title())))
-            self.tableWidget.setItem(i, 2, QTableWidgetItem(str(music.get_artist())))
+            self.tableWidget.setItem(i, 1, QTableWidgetItem(music.title))
+            self.tableWidget.setItem(i, 2, QTableWidgetItem(music.artist))
             # self.tableWidget.setItem(i, 3, icon_item)
             self.tableWidget.setCellWidget(i, 3, self.btn_link)
 
-            self.tableWidget.setItem(i, 4, QTableWidgetItem(util.format_time(music.get_duration())))
+            self.tableWidget.setItem(i, 4, QTableWidgetItem(util.format_time(music.duration)))
 
         # 为当前音乐设置喇叭图标
         icon_label = QLabel()

@@ -3,6 +3,7 @@ import os
 from PyQt5 import QtCore
 from PyQt5.QtCore import QObject
 
+from src.entity.music_list import MusicList
 from src.service.MP3Parser import MP3
 
 from src.entity.music import Music
@@ -15,7 +16,6 @@ class SearchLocalMusic(QObject):
 
     def __init__(self):
         super().__init__()
-        # self.music_service = MusicService()
 
     @staticmethod
     # 全盘搜索
@@ -40,7 +40,7 @@ class SearchLocalMusic(QObject):
         musics = []
         for search_path in search_paths:
             paths = SearchLocalMusic.__loop_all(search_path, paths)
-        musics = SearchLocalMusic.__get_mp3_info(paths, musics)
+        musics = SearchLocalMusic.__get_mp3_info(list(paths), musics)
         self.__to_database(musics)
         self.end_search.emit()
 
@@ -49,7 +49,7 @@ class SearchLocalMusic(QObject):
     def __to_database(musics: list):
         music_service = MusicService()
         # 先把原先的本地音乐删除
-        music_service.delete_by_mid(0)
+        # music_service.delete_by_mid(0)
         music_service.batch_insert(musics)
 
     @staticmethod
@@ -107,13 +107,13 @@ class SearchLocalMusic(QObject):
 
                     duration = mp3.duration
                     music = Music()
-                    music.set_mlid(0)
-                    music.set_path(path)
-                    music.set_title(title)
-                    music.set_artist(artist)
-                    music.set_album(album)
-                    music.set_duration(duration)
-                    music.set_size(size)
+                    music.mid = MusicList.default_id
+                    music.path = path
+                    music.title = title
+                    music.artist = artist
+                    music.album = album
+                    music.duration = duration
+                    music.size = size
                     musics.append(music)
             except IndexError as e:
                 pass

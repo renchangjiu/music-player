@@ -1,5 +1,4 @@
 import os
-from src.common.app_attribute import AppAttribute
 from src.dao.music_dao import MusicDao
 from src.entity.music import Music
 from src.service import util
@@ -20,37 +19,54 @@ class MusicService:
         """
         m = Music()
         mp3 = MP3(path)
-        m.set_mlid(mid)
-        m.set_path(path)
-        m.set_size(util.format_size(os.path.getsize(path)))
-        m.set_title(mp3.title)
-        m.set_artist(mp3.artist)
-        m.set_album(mp3.album)
-        m.set_duration(mp3.duration)
+        m.mid = mid
+        m.path = path
+        m.size = util.format_size(os.path.getsize(path))
+        m.title = mp3.title
+        m.artist = mp3.artist
+        m.album = mp3.album
+        m.duration = mp3.duration
         return m
 
-    def get_musics_by_mid(self, mid: int) -> tuple:
+    def list_(self, m: Music) -> tuple:
+        return tuple(self.music_dao.list_(m))
+
+    def list_by_mid(self, mid: int) -> tuple:
         """
         查询该歌单所属的所有歌曲
         :param mid: 歌单id
         """
-        musics = self.music_dao.select_by_mlid(mid)
+        musics = self.music_dao.list_by_mid(mid)
         return tuple(musics)
 
-    def get_music_by_id(self, _id: int) -> Music:
+    def get_by_id(self, _id: int) -> Music:
         """根据ID获取歌曲"""
         return self.music_dao.select_by_id(_id)
 
-    def has_same_music(self, music_: Music) -> bool:
-        """根据歌单ID和path判断 该歌单内是否已经有同一首歌曲"""
-        musics = self.music_dao.select_by_selective(music_)
+    def contains(self, mid: str, path: str) -> bool:
+        """根据歌单ID和path判断该歌单内是否已经有相同的歌曲"""
+        music = Music()
+        music.mid = mid
+        music.path = path
+        musics = self.music_dao.list_(music)
         return len(musics) != 0
 
     def insert(self, music_: Music):
         self.music_dao.insert(music_)
 
     def batch_insert(self, musics: list):
-        self.music_dao.batch_insert(musics)
+        """ 重复数据不会被插入(重复指 path 及 mid 相同) """
+        total_list = self.list_(Music())
+        data = []
+        for music in musics:
+            flag = True
+            for m in total_list:
+                if music.path == m.path and music.mid == m.mid:
+                    flag = False
+                    break
+            if flag:
+                data.append(music)
+        self.music_dao.batch_insert(data)
 
     def delete(self, _id: int):
         """
@@ -68,13 +84,20 @@ class MusicService:
 
     def delete_by_mid(self, mid: int):
         """ 根据歌单ID删除 """
-        self.music_dao.delete_by_mlid(mid)
+        self.music_dao.delete_by_mid(mid)
+
+    def index_of(self, id_: int, mid: int) -> int:
+        """ 判断某歌曲是否属于某歌单, 是则返回该歌曲在该歌单中的索引, 否则返回-1 """
+        music = self.get_by_id(id_)
+        if music.mid != mid:
+            return -1
+        musics = self.list_by_mid(mid)
+        for i in range(len(musics)):
+            m = musics[i]
+            if m.id == music.id:
+                return i
+        return -1
 
 
 if __name__ == "__main__":
-    service = MusicService()
-    music = Music()
-    music.set_mlid(10)
-    music.set_path("/path/a.mp3")
-    ret = service.has_same_music(music)
-    print(ret)
+    pass

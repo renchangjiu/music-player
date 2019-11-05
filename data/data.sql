@@ -10,9 +10,9 @@ create table t_music_list
 create table t_music
 (
     id       integer primary key autoincrement,
-    mlid     integer not null, --关联的歌单id
+    mid      integer not null, --关联的歌单id
     path     text    not null, --文件绝对路径
-    size     integer,          --文件大小, 字节
+    size     text,             --文件大小, 如: 5MB
     title    text,             --MP3 title
     artist   text,             --MP3 歌手名
     album    text,             --MP3 专辑名

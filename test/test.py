@@ -59,5 +59,6 @@ def example():
 
 
 if __name__ == "__main__":
+    print()
     count_code_lines()
     # select()

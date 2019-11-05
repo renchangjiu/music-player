@@ -57,7 +57,7 @@ class NeteaseCloudMusicApi:
         print(resp.text)
 
     def match_lyric(self, music: Music):
-        search_resp = self.search("%s %s" % (music.get_title(), music.get_artist()))
+        search_resp = self.search("%s %s" % (music.title, music.artist))
         # 解析搜索响应, 找到最匹配的记录获得其ID
         loads = json.loads(search_resp)
         if loads["result"]["songCount"] <= 0:
@@ -66,7 +66,7 @@ class NeteaseCloudMusicApi:
         for song in songs:
             name = song["name"]
             album = song["al"]["name"]
-            if name == music.get_title() and album == music.get_album():
+            if name == music.title and album == music.album:
                 id = song["id"]
                 lyric_resp = self.lyric(id)
                 print(lyric_resp)
@@ -77,7 +77,6 @@ class NeteaseCloudMusicApi:
                 return lyric
 
 
-
 if __name__ == "__main__":
     api = NeteaseCloudMusicApi()
     # api.comment("26333122")
@@ -85,7 +84,7 @@ if __name__ == "__main__":
     # api.search("only my railgun fripSide")
     # api.lyric("26333122")
     music = Music()
-    music.set_title("灼之花")
-    music.set_artist("洛天依/乐正绫")
-    music.set_album("洛天依作品集")
+    music.title = "灼之花"
+    music.artist = "洛天依/乐正绫"
+    music.album = "洛天依作品集"
     api.match_lyric(music)

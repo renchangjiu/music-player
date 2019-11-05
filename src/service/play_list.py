@@ -84,7 +84,7 @@ class PlayList(QObject):
 
     def contains(self, path):
         for music in self.__musics:
-            if music.get_path() == path:
+            if music.path == path:
                 return True
         return False
 
@@ -98,7 +98,7 @@ class PlayList(QObject):
     # 来自于同歌单且path相同的music将被判断为 相同的music
     def is_same_music(self, one: Music, another: Music):
         if type(one) == type(another):
-            if one.get_path() == another.get_path() and one.get_mlid() == another.get_mlid():
+            if one.path == another.path and one.mid == another.mid:
                 return True
         return False
 
@@ -137,9 +137,9 @@ class PlayList(QObject):
             ret = "PlayerList %d [" % self.size()
             for i in range(len(self.__musics)):
                 ret += "\t"
-                ret += self.__musics[i].get_path()
+                ret += self.__musics[i].path
                 ret += ",\t\t"
-                ret += self.__musics[i].get_title()
+                ret += self.__musics[i].title
                 ret += "\n"
             ret += "]"
             return ret

@@ -13,7 +13,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QCheckBox, QFileDialog
 
 from src.service.search_local_music import SearchLocalMusic
-
+from src.common.app_attribute import AppAttribute
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -172,7 +172,7 @@ class ChooseMusicDirPage(QtWidgets.QDialog, Ui_Dialog):
     def get_music_path():
         try:
             ret = []
-            config_path = "./data/config.ini"
+            config_path = AppAttribute.data_path + "/config.ini"
             config = configparser.ConfigParser()
             config.read(config_path, "utf-8")
             # d:/path1/*checked?d:/path2/path2/*checked?d:/path3/path3/path3/unchecked?
@@ -193,7 +193,7 @@ class ChooseMusicDirPage(QtWidgets.QDialog, Ui_Dialog):
         path_str = ""
         for path in paths:
             path_str = path_str + path[0] + "*" + path[1] + "?"
-        config_path = "./data/config.ini"
+        config_path = AppAttribute.data_path + "/config.ini"
         config = configparser.ConfigParser()
         config.read(config_path, "utf-8")
         config.set("music-path", "path", path_str)

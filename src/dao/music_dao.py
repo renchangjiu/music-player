@@ -2,54 +2,59 @@ import sqlite3
 
 from src.entity.music import Music
 from src.common.app_attribute import AppAttribute
+from src.util.string_util import StringUtils
 
 
 class MusicDao:
     def __init__(self):
-        self.database = AppAttribute.db_path + "/data.db"
+        self.database = AppAttribute.data_path + "/data.db"
         self.conn = sqlite3.connect(self.database)
 
-    def select_by_mlid(self, music_list_id: int) -> list:
+    def list_by_mid(self, mid: int) -> list:
         """
-        查询该歌单所属的所有歌曲
-        :param music_list_id:
+        根据歌单ID, 查询该歌单所属的所有歌曲
+        :param mid:
         :return:
         """
-        sql = "select * from t_music where mlid = ?"
-        musics = []
+        sql = "select * from t_music where mid = ?"
+        musics_ = []
         cursor = self.conn.cursor()
-        cursor.execute(sql, (music_list_id,))
+        cursor.execute(sql, (mid,))
         ret = cursor.fetchall()
         cursor.close()
         for row in ret:
-            music = self.__row_2_music(row)
-            musics.append(music)
-        return musics
+            m = self.__row_2_music(row)
+            musics_.append(m)
+        return musics_
 
     def select_by_id(self, _id: int) -> Music:
         sql = "select * from t_music where id = ?"
         cursor = self.conn.cursor()
         cursor.execute(sql, (_id,))
-        ret = cursor.fetchall()[0]
+        ret = cursor.fetchall()
+        ret = ret[0]
         cursor.close()
-        music = self.__row_2_music(ret)
-        return music
+        m = self.__row_2_music(ret)
+        return m
 
-    def select_by_selective(self, music: Music) -> list:
+    def list_(self, m: Music) -> list:
         sql = "select * from t_music where 1 = 1"
-        if music.get_mlid() != None and music.get_mlid() != "":
-            sql = sql + " and mlid = '" + str(music.get_mlid()) + "'"
-        if music.get_path() != None and music.get_path() != "":
-            sql = sql + " and path = '" + music.get_path() + "'"
-        musics = []
+        if m is not None:
+            if StringUtils.is_not_empty(m.id):
+                sql = sql + " and id = '" + str(m.id) + "'"
+            if StringUtils.is_not_empty(m.mid):
+                sql = sql + " and mid = '" + str(m.mid) + "'"
+            if StringUtils.is_not_empty(m.path):
+                sql = sql + " and path = '" + m.path + "'"
+        musics_ = []
         cursor = self.conn.cursor()
         cursor.execute(sql)
         ret = cursor.fetchall()
         cursor.close()
         for row in ret:
-            music = self.__row_2_music(row)
-            musics.append(music)
-        return musics
+            m = self.__row_2_music(row)
+            musics_.append(m)
+        return musics_
 
     def insert(self, music: Music):
         sql = "insert into t_music values (null, ?, ?, ?, ?, ?, ?, ?)"
@@ -59,70 +64,56 @@ class MusicDao:
     def batch_insert(self, musics: list):
         """ 批量插入 """
         sql = "insert into t_music values (null, ?, ?, ?, ?, ?, ?, ?)"
-        for music in musics:
-            self.conn.execute(sql, self.__music_2_row(music))
+        for m in musics:
+            self.conn.execute(sql, self.__music_2_row(m))
         self.conn.commit()
 
-    def delete(self, _id: int):
+    def delete(self, id_: int):
         """
-        删除该歌曲, 即把该歌曲从所属歌单里删除
-        :param _id: 歌曲ID
+        删除该歌曲
+        :param id_: 歌曲ID
         """
         sql = "delete from t_music where id = ?"
-        self.conn.execute(sql, (_id,))
+        self.conn.execute(sql, (id_,))
         self.conn.commit()
 
-    def batch_delete(self, _ids: list):
+    def batch_delete(self, ids_: list):
         """ 批量删除 """
         sql = "delete from t_music where id = ?"
-        for _id in _ids:
+        for _id in ids_:
             self.conn.execute(sql, (_id,))
         self.conn.commit()
 
-    def delete_by_mlid(self, mlid: int):
-        """ 根据歌单ID删除 """
-        sql = "delete from t_music where mlid = ?"
-        self.conn.execute(sql, (mlid,))
+    def delete_by_mid(self, mid: int):
+        """ 根据歌单ID删除属于该歌单的所有歌曲 """
+        sql = "delete from t_music where mid = ?"
+        self.conn.execute(sql, (mid,))
         self.conn.commit()
 
-    def __music_2_row(self, music: Music) -> tuple:
+    @staticmethod
+    def __music_2_row(m: Music) -> tuple:
         return (
-            music.get_mlid(), music.get_path(), music.get_size(), music.get_title(),
-            music.get_artist(), music.get_album(), music.get_duration())
+            m.mid, m.path, m.size, m.title,
+            m.artist, m.album, m.duration)
 
-    def __row_2_music(self, row: tuple):
+    @staticmethod
+    def __row_2_music(row: tuple):
         """
         把表中查询到的一行数据封装成一个Music对象
         :param row: 一行数据
         :return: Music
         """
-        music = Music()
-        music.set_id(row[0])
-        music.set_mlid(row[1])
-        music.set_path(row[2])
-        music.set_size(row[3])
-        music.set_title(row[4])
-        music.set_artist(row[5])
-        music.set_album(row[6])
-        music.set_duration(row[7])
-        return music
+        m = Music()
+        m.id = row[0]
+        m.mid = row[1]
+        m.path = row[2]
+        m.size = row[3]
+        m.title = row[4]
+        m.artist = row[5]
+        m.album = row[6]
+        m.duration = row[7]
+        return m
 
 
 if __name__ == "__main__":
-    dao = MusicDao()
-    # MusicDao().select_by_mlid(2)
-    # MusicDao().select_by_id(1)
-    # m1 = Music()
-    # m1.set_path("D:/13595/Music/ClariS - blossom.mp3")
-    # m1.set_title("blossom")
-    # m1.set_artist("ClariS")
-    # m1.set_album("unknown")
-    # m1.set_duration(231)
-    # dao.insert(m1)
-    # dao.delete(12)
-    music = Music()
-    music.set_mlid(1)
-    music.set_path("/path/a.mp3")
-    musics = dao.select_by_selective(music)
-    for music in musics:
-        print(music)
+    pass
