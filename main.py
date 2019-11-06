@@ -1,4 +1,6 @@
-import re, os, sys
+import re
+import os
+import sys
 import threading
 
 from PyQt5 import QtWidgets
@@ -9,8 +11,8 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QListWidgetItem, QT
     QAction, QMenu, QLabel, QWidgetAction, QHBoxLayout
 
 from src.common.app_attribute import AppAttribute
+from src.common.check_program import CheckProgram
 
-from src.service.check_program import CheckProgram
 from src.service.LRCParser import LRC
 from src.service.MP3Parser import MP3
 from src.service.main_widget import Ui_Form
@@ -20,7 +22,8 @@ from src.service.music_service import MusicService
 from src.ui import add_music_list
 from src.ui.choose_music_dir import ChooseMusicDirPage
 from src.ui.play_list_page import PlayListPage
-from src.service import util
+from src.ui.style import Style
+from src.util import util
 from src.service.search_local_music import SearchLocalMusic
 
 from src.ui.toast import Toast
@@ -122,7 +125,7 @@ class MainWindow(QWidget, Ui_Form):
         font.setPixelSize(13)
         local_item = QListWidgetItem(self.navigation)
         local_item.setData(Qt.UserRole, self.music_list_service.get_local_music())
-        local_item.setIcon(QIcon("./resource/image/本地音乐.png"))
+        local_item.setIcon(QIcon("./resource/image/歌单0.png"))
         local_item.setText("本地音乐")
         local_item.setFont(font)
 
@@ -132,10 +135,9 @@ class MainWindow(QWidget, Ui_Form):
         item1.setText("创建的歌单")
         item1.setFlags(Qt.NoItemFlags)
         self.navigation.addItem(item1)
-
-        all_music_list = self.music_list_service.get_all_music_list()
-        music_list_icon = QIcon("./resource/image/歌单.png")
-        for music_list in all_music_list:
+        mls = list(filter(lambda ml: ml.id != MusicList.DEFAULT_ID, self.music_list_service.list_(MusicList())))
+        music_list_icon = QIcon("./resource/image/歌单1.png")
+        for music_list in mls:
             item = QListWidgetItem()
             item.setIcon(music_list_icon)
             item.setFont(font)
@@ -264,26 +266,26 @@ class MainWindow(QWidget, Ui_Form):
 
     # 若当前播放的音乐属于该歌单, 则为其设置喇叭图标
     def set_icon_item(self):
-        if self.cur_play_list is not None:
-            if self.cur_play_list.get_current_music() is not None:
-                # 找到当前播放的音乐在该歌单中的索引
-                playing_row = self.music_service.index_of(self.cur_play_list.get_current_music().id,
-                                                          self.cur_music_list.id)
-                if playing_row != -1:
-                    icon_label = QLabel()
-                    # 播放状态或暂停状态显示两种图标
-                    if self.state == self.playing_state:
-                        icon_label.setPixmap(QPixmap("./resource/image/musics_play.png"))
-                    else:
-                        icon_label.setPixmap(QPixmap("./resource/image/musics_pause.png"))
-                    icon_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                    # 区分歌单页面和本地音乐页面
-                    if self.stackedWidget_2.currentWidget() == self.music_list_detail:
-                        self.musics.item(playing_row, 0).setText("")
-                        self.musics.setCellWidget(playing_row, 0, icon_label)
-                    elif self.stackedWidget_2.currentWidget() == self.local_music_page:
-                        self.tb_local_music.item(playing_row, 0).setText("")
-                        self.tb_local_music.setCellWidget(playing_row, 0, icon_label)
+        if self.cur_play_list is None or self.cur_play_list.get_current_music() is None:
+            return
+        cur_music = self.cur_play_list.get_current_music()
+        # 找到当前播放的音乐在该歌单中的索引
+        playing_row = self.music_service.index_of(cur_music.id, self.cur_music_list)
+        if playing_row != -1:
+            icon_label = QLabel()
+            # 播放状态或暂停状态显示两种图标
+            if self.state == self.playing_state:
+                icon_label.setPixmap(QPixmap("./resource/image/musics_play.png"))
+            else:
+                icon_label.setPixmap(QPixmap("./resource/image/musics_pause.png"))
+            icon_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            # 区分歌单页面和本地音乐页面
+            if self.stackedWidget_2.currentWidget() == self.music_list_detail:
+                self.musics.item(playing_row, 0).setText("")
+                self.musics.setCellWidget(playing_row, 0, icon_label)
+            elif self.stackedWidget_2.currentWidget() == self.local_music_page:
+                self.tb_local_music.item(playing_row, 0).setText("")
+                self.tb_local_music.setCellWidget(playing_row, 0, icon_label)
 
     def show_local_music_page(self):
         self.stackedWidget_2.setCurrentWidget(self.local_music_page)
@@ -329,7 +331,9 @@ class MainWindow(QWidget, Ui_Form):
 
     # 显示左下音乐名片相关信息
     def show_music_info(self):
-        if self.cur_play_list.size() > 0:
+        if self.cur_play_list.size() <= 0:
+            self.music_info_widget.hide()
+        else:
             if self.music_info_widget.isHidden():
                 self.music_info_widget.show()
             music = self.cur_play_list.get_current_music()
@@ -345,8 +349,6 @@ class MainWindow(QWidget, Ui_Form):
 
             self.label_music_title.setText(self.get_elided_text(self.label_music_title.font(), title, max_width))
             self.label_music_artist.setText(self.get_elided_text(self.label_music_artist.font(), artist, max_width))
-        else:
-            self.music_info_widget.hide()
 
     def init_button(self):
         self.label_play_count.setText(str(self.cur_play_list.size()))
@@ -530,15 +532,8 @@ class MainWindow(QWidget, Ui_Form):
         self.main_stacked_widget.setCurrentWidget(self.main_page)
         self.stackedWidget_2.setCurrentWidget(self.music_list_detail)
         # ------------------ header------------------ #
-        qss_header = open("./resource/qss/header.qss", "r", encoding="utf-8")
-        self.header.setStyleSheet(qss_header.read())
-        qss_header.close()
-
-        self.btn_icon.setCursor(Qt.PointingHandCursor)
-        self.btn_window_close.setCursor(Qt.PointingHandCursor)
-        self.btn_window_max.setCursor(Qt.PointingHandCursor)
-        self.btn_window_min.setCursor(Qt.PointingHandCursor)
-        self.btn_set.setCursor(Qt.PointingHandCursor)
+        Style.init_header_style(self.header, self.btn_icon, self.btn_window_close, self.btn_window_max,
+                                self.btn_window_min, self.btn_set)
 
         # TODO 输入文字后, 前景色变亮
         self.le_search.setPlaceholderText("搜索音乐")
@@ -552,11 +547,8 @@ class MainWindow(QWidget, Ui_Form):
         mln_font = QFont()
         mln_font.setPointSize(20)
         self.music_list_name.setFont(mln_font)
-        # self.music_list_name.setText(self.cur_music_list.name)
-        # self.music_list_date.setText("%s创建" % self.cur_music_list.get_creatd())
         self.music_count.setStyleSheet("color:#999999")
         self.music_list_play_count.setStyleSheet("color:#999999")
-        # self.line.setStyleSheet("background-color:#999999;border:10px")
         self.music_list_image.setPixmap(QPixmap("./resource/image/music_list/rikka.png"))
         self.widget_2.setStyleSheet("background-color:#fafafa;border:none")
         self.label_4.setStyleSheet("QLabel{background-color:#c62f2f; color:white;border:1px solid red}")
@@ -570,25 +562,10 @@ class MainWindow(QWidget, Ui_Form):
         self.music_list_search.addAction(self.search_act, QLineEdit.TrailingPosition)
         self.main_stacked_widget.setStyleSheet("border-bottom: 1px solid #E1E1E2")
 
-        # ------------------ 左边导航栏 ------------------ #
-        self.navigation.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.navigation.setStyleSheet(
-            "QListWidget{outline:0px; color:#5c5c5c; background:#f5f5f7;border-top:none;border-left:none;font-size:13px;"
-            "border-right:1px solid #e1e1e2;border-bottom:1px solid #e1e1e2}"
-            "QListWidget::Item{height:32px;border:0px solid gray;padding-left:19px;font-size:13px;}"
-            "QListWidget::Item:hover{color:#000000;background:transparent;border:0px solid gray;}"
-            "QListWidget::Item:selected{background:#e6e7ea;color:#000000;border-left: 3px solid #c62f2f;}")
-        self.navigation.verticalScrollBar().setStyleSheet("QScrollBar{background:#fafafa; width: 8px;}"
-                                                          "QScrollBar::handle{background:#e1e1e2;border-radius:4px;}"
-                                                          "QScrollBar::handle:hover{background:#cfcfd1;}"
-                                                          "QScrollBar::sub-line{background:transparent;}"
-                                                          "QScrollBar::add-line{background:transparent;}"
-                                                          "QScrollBar::add-page{background:#f5f5f7;}"
-                                                          "QScrollBar::sub-page{background:#f5f5f7;}")
-        self.navigation.setCursor(Qt.PointingHandCursor)
+        # # ------------------ 左边导航栏 ------------------ #
+        Style.init_nav_style(self.navigation)
+
         self.slider_progress.setCursor(Qt.PointingHandCursor)
-        # 更改右键策略
-        self.navigation.setContextMenuPolicy(Qt.CustomContextMenu)
         # 创建歌单按钮
         self.btn_add_music_list = QPushButton(self.navigation)
         self.btn_add_music_list.setCursor(Qt.PointingHandCursor)
@@ -598,30 +575,17 @@ class MainWindow(QWidget, Ui_Form):
 
         # 点击创建歌单按钮弹出窗口
         self.add_music_list_dialog = add_music_list.AddMusicListDialog()
-        # 右下窗口缩放按钮
-        self.btn_zoom = QPushButton(self)
-        self.btn_zoom.setGeometry(self.width() - 18, self.height() - 18, 14, 14)
-        self.btn_zoom.setStyleSheet("QPushButton{border-image:url(./resource/image/缩放.png)}")
-        self.btn_zoom.setCursor(Qt.SizeFDiagCursor)
 
         # ------------------ 左下音乐名片模块 ------------------ #
-        self.music_info_widget.setStyleSheet(
-            "QWidget#music_info_widget{background-color:#f5f5f7;border:none;border-right:1px solid #e1e1e2;}")
-        self.music_info_widget.setCursor(Qt.PointingHandCursor)
-        self.btn_music_image.setIconSize(QSize(44, 44))
-        self.btn_music_image.setAutoFillBackground(True)
         self.music_image_label = QLabel(self.music_info_widget)
-        self.music_image_label.setStyleSheet("QLabel{background-color: rgba(71, 71, 71, 150)}")
-        self.music_image_label.setPixmap(QPixmap("./resource/image/全屏.png"))
-        self.music_image_label.hide()
+        Style.init_music_card_style(self.music_info_widget, self.btn_music_image, self.music_image_label)
         self.show_music_info()
 
         # ------------------ footer ------------------ #
-        self.slider_volume.setValue(self.volume)
-        self.slider_volume.setCursor(Qt.PointingHandCursor)
-        qss_foot = open("./resource/qss/footer.qss", "r", encoding="utf-8")
-        self.footer.setStyleSheet(qss_foot.read())
-        qss_foot.close()
+        # 右下窗口缩放按钮
+        self.btn_zoom = QPushButton(self)
+        Style.init_footer_style(self.slider_volume, self.footer, self.volume, self.btn_zoom, self.width(),
+                                self.height())
 
         # ------------------ 全屏播放窗口 ------------------ #
         self.play_page.setStyleSheet("border-image:url(./resource/image/渐变背景.png) repeated;border:none; ")
@@ -853,8 +817,8 @@ class MainWindow(QWidget, Ui_Form):
         act0 = self.create_widget_action("./resource/image/添加歌单.png", "创建新歌单")
         self.collect_menu.addAction(act0)
         self.collect_menu.addSeparator()
-        all_music_list = self.music_list_service.get_all_music_list()
-        for music_list in all_music_list:
+        mls = list(filter(lambda ml: ml.id != MusicList.DEFAULT_ID, self.music_list_service.list_(MusicList())))
+        for music_list in mls:
             act = self.create_widget_action("./resource/image/歌单.png", music_list.name, music_list)
             self.collect_menu.addAction(act)
             act.triggered.connect(lambda: self.on_acts_choose(musics))
@@ -957,10 +921,7 @@ class MainWindow(QWidget, Ui_Form):
 
     def on_search(self, text: str):
         text = text.strip()
-        if len(text) != 0:
-            self.cur_music_list = MusicListService.search(self.cur_whole_music_list, text)
-        else:
-            self.cur_music_list = MusicListService.copy(self.cur_whole_music_list)
+        self.cur_music_list = self.music_service.search(text, self.cur_music_list.id)
         # 显示当前页面显示两个不同的表格
         if self.stackedWidget_2.currentWidget() == self.music_list_detail:
             self.show_musics_data()

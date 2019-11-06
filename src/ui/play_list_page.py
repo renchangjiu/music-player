@@ -5,7 +5,8 @@ from PyQt5.QtWidgets import QWidget, QTableWidgetItem, \
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from src.service import util
+from src.entity.music_list import MusicList
+from src.util import util
 from src.service.music_list_service import MusicListService
 from src.service.tablewidget import TableWidget
 
@@ -160,7 +161,7 @@ class PlayListPage(QWidget, Ui_Form):
         # 若点击的是链接按钮, 则跳转到对应的歌单页面
         if column == 3:
             music = self.parent().cur_play_list.get(row)
-            music_list = self.music_list_service.get_music_list_by_id(music.mid)
+            music_list = self.music_list_service.get_by_id(music.mid)
             self.parent().navigation.setFocus()
             self.parent().navigation.setCurrentRow(2)
 
@@ -204,13 +205,13 @@ class PlayListPage(QWidget, Ui_Form):
         for row in rows:
             music = self.parent().cur_play_list.get(row)
             musics.append(music)
+        # 只选中了一行
+        if len(rows) == 1:
+            self.play_list_menu.addAction(act3)
         # 设置子菜单归属于act2
         self.create_collect_menu(musics)
         act2.setMenu(self.collect_menu)
         self.play_list_menu.addMenu(self.collect_menu)
-        # 只选中了一行
-        if len(rows) == 1:
-            self.play_list_menu.addAction(act3)
 
         self.play_list_menu.addSeparator()
         self.play_list_menu.addAction(act4)
@@ -219,7 +220,7 @@ class PlayListPage(QWidget, Ui_Form):
         act4.triggered.connect(lambda: self.on_act_del(musics))
         self.play_list_menu.exec(QCursor.pos())
 
-    def on_act_del(self, musics):
+    def on_act_del(self, musics: list):
         cur = self.parent().cur_play_list.get_current_music()
         playing = False
         for music in musics:
@@ -233,7 +234,7 @@ class PlayListPage(QWidget, Ui_Form):
         if playing:
             self.parent().next_music()
 
-        # 若播放列表为空, 则做些事情
+        # 若播放列表为空
         if self.parent().cur_play_list.size() == 0:
             self.parent().music_info_widget.hide()
             self.parent().stop_current()
@@ -245,8 +246,8 @@ class PlayListPage(QWidget, Ui_Form):
         act0 = self.create_widget_action("./resource/image/添加歌单.png", "创建新歌单")
         self.collect_menu.addAction(act0)
         self.collect_menu.addSeparator()
-        all_music_list = self.music_list_service.get_all_music_list()
-        for music_list in all_music_list:
+        mls = list(filter(lambda ml: ml.id != MusicList.DEFAULT_ID, self.music_list_service.list_(MusicList())))
+        for music_list in mls:
             act = self.create_widget_action("./resource/image/歌单.png", music_list.name, music_list)
             self.collect_menu.addAction(act)
             act.triggered.connect(lambda: self.parent().on_acts_choose(musics))

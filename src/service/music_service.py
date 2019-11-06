@@ -1,13 +1,16 @@
 import os
 from src.dao.music_dao import MusicDao
+from src.dao.music_list_dao import MusicListDao
 from src.entity.music import Music
-from src.service import util
+from src.entity.music_list import MusicList
+from src.util import util
 from src.service.MP3Parser import MP3
 
 
 class MusicService:
     def __init__(self) -> None:
         self.music_dao = MusicDao()
+        self.music_list_dao = MusicListDao()
 
     @staticmethod
     def gen_music_by_path(path: str, mid: int):
@@ -86,17 +89,32 @@ class MusicService:
         """ 根据歌单ID删除 """
         self.music_dao.delete_by_mid(mid)
 
-    def index_of(self, id_: int, mid: int) -> int:
+
+    def index_of(self, id_: int, music_list: MusicList) -> int:
         """ 判断某歌曲是否属于某歌单, 是则返回该歌曲在该歌单中的索引, 否则返回-1 """
         music = self.get_by_id(id_)
-        if music.mid != mid:
+        if music.mid != music_list.id:
             return -1
-        musics = self.list_by_mid(mid)
+        musics = music_list.musics
         for i in range(len(musics)):
             m = musics[i]
             if m.id == music.id:
                 return i
         return -1
+
+    def search(self, keyword: str, mid: int) -> MusicList:
+        """ 在该歌单内, 根据title, artist, album搜索, 返回搜索结果集. """
+        keyword = keyword.lower()
+        ret = self.music_list_dao.get_by_id(mid)
+        musics = self.list_by_mid(mid)
+        ret.musics = []
+        for m in musics:
+            title = m.title.lower()
+            artist = m.artist.lower()
+            album = m.album.lower()
+            if title.find(keyword) != -1 or artist.find(keyword) != -1 or album.find(keyword) != -1:
+                ret.musics.append(m)
+        return ret
 
 
 if __name__ == "__main__":

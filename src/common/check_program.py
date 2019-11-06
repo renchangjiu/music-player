@@ -16,5 +16,5 @@ class CheckProgram:
             shutil.copyfile(AppAttribute.data_path + "/empty.db", db_file)
             music_service = MusicService()
             path = AppAttribute.res_path + "/洛天依 - 清明上河图.mp3"
-            music = music_service.gen_music_by_path(path, MusicList.default_id)
+            music = music_service.gen_music_by_path(path, MusicList.DEFAULT_ID)
             music_service.insert(music)

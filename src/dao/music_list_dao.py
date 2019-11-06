@@ -3,6 +3,7 @@ from datetime import datetime
 
 from src.common.app_attribute import AppAttribute
 from src.entity.music_list import MusicList
+from src.util.string_util import StringUtils
 
 
 class MusicListDao:
@@ -10,6 +11,26 @@ class MusicListDao:
         # 连接到SQLite数据库, 数据库文件是test.db, 如果文件不存在，会自动在当前目录创建
         self.database = AppAttribute.data_path + "/data.db"
         self.conn = sqlite3.connect(self.database)
+
+    def list_(self, ml: MusicList) -> list:
+        """ 条件查询 """
+        music_lists = []
+        # sql = "select * from t_music_list where is_deleted = 0 and created > 0 order by created"
+        sql = "select * from t_music_list where is_deleted = 0 "
+        if ml is not None:
+            if StringUtils.is_not_empty(ml.id):
+                sql = sql + " and id = '" + str(ml.id) + "'"
+            if StringUtils.is_not_empty(ml.name):
+                sql = sql + " and name = '" + str(ml.name) + "'"
+        sql = sql + "order by created desc"
+        cursor = self.conn.cursor()
+        cursor.execute(sql)
+        ret = cursor.fetchall()
+        cursor.close()
+        for row in ret:
+            music_list = self.__row_2_music_list(row)
+            music_lists.append(music_list)
+        return music_lists
 
     def select_list(self) -> list:
         """
@@ -28,13 +49,8 @@ class MusicListDao:
             music_lists.append(music_list)
         return music_lists
 
-    def select_by_id(self, id_: int) -> MusicList:
-        """
-        select music list by id
-
-        :param id_: 歌单id
-        :return: MusicList
-        """
+    def get_by_id(self, id_: int) -> MusicList:
+        """ get by id """
         sql = "select * from t_music_list where id = ? and is_deleted = 0"
         cursor = self.conn.cursor()
         cursor.execute(sql, (id_,))
@@ -105,12 +121,4 @@ class MusicListDao:
 
 
 if __name__ == "__main__":
-    dao = MusicListDao()
-    # MusicListDao().select_by_id(1)
-    # MusicListDao().select_list()
-    # MusicListDao().logic_delete(20)
-    # music_list = MusicList()
-    # music_list.name = "n4"
-    # music_list.created = time.strftime("%Y-%m-%d")
-    # dao.insert(music_list)
-    # dao.select_by_id_include_music()
+    pass

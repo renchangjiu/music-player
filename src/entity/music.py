@@ -18,14 +18,9 @@ class Music:
         self.duration = None
 
     def __str__(self):
-        if self.__from is not None:
-            ret = "Music [path: %s, from: %s,  title: %s, artist: %s, album: %s, duration: %d, size: %s" % (
-                self.path, self.__from.name, self.title, self.artist, self.album,
-                self.duration, self.size)
-        else:
-            ret = "Music [path: %s, from: none,  title: %s, artist: %s, album: %s, duration: %d, size: %s" % (
-                self.path, self.title, self.artist, self.album,
-                self.duration, self.size)
+        ret = "Music [path: %s, from: none,  title: %s, artist: %s, album: %s, duration: %d, size: %s" % (
+            self.path, self.title, self.artist, self.album,
+            self.duration, self.size)
         if self.image != "" and self.image != b"":
             ret += ", image: has image ]"
         else:

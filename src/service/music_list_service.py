@@ -23,41 +23,20 @@ class MusicListService:
         ret.musics = source.musics[0:len(source.musics)]
         return ret
 
-    @staticmethod
-    def search(music_list: MusicList, keyword: str) -> MusicList:
-        """ 根据title, artist, album搜索, 返回搜索结果集 """
-        keyword = keyword.lower()
-        ret = MusicList()
-        ret.name = music_list.name
-        ret.play_count = music_list.play_count
-        ret.musics = []
-        for m in music_list.musics:
-            title = m.title.lower()
-            artist = m.artist.lower()
-            album = m.album.lower()
-            if title.find(keyword) != -1 or artist.find(keyword) != -1 or album.find(keyword) != -1:
-                ret.musics.append(m)
-        return ret
-
-    def get_all_music_list(self) -> tuple:
-        """获取所有歌单"""
-        music_lists = self.music_list_dao.select_list()
-        return tuple(music_lists)
+    def list_(self, ml: MusicList) -> tuple:
+        """ 按条件查询 """
+        return tuple(self.music_list_dao.list_(ml))
 
     def get_local_music(self) -> MusicList:
         """获取本地音乐歌单, 同时查出该歌单下的所属音乐"""
-        music_list = self.music_list_dao.select_by_id(MusicList.default_id)
+        music_list = self.music_list_dao.get_by_id(MusicList.DEFAULT_ID)
         musics = self.music_dao.list_by_mid(music_list.id)
         music_list.musics = musics
         return music_list
 
-    def get_music_list_by_id(self, _id: int) -> MusicList:
-        """根据ID获取歌单信息"""
-        return self.music_list_dao.select_by_id(_id)
-
     def get_by_id(self, id_: int) -> MusicList:
         """ 根据ID获取歌单信息, 同时获取该歌单的所属音乐 """
-        music_list = self.music_list_dao.select_by_id(id_)
+        music_list = self.music_list_dao.get_by_id(id_)
         musics = self.music_dao.list_by_mid(id_)
         music_list.musics = musics
         return music_list
@@ -77,7 +56,8 @@ class MusicListService:
         ml.created = int(time.time())
         self.music_list_dao.insert(ml)
 
-    def to_play_list(self, music_list: MusicList) -> PlayList:
+    @staticmethod
+    def to_play_list(music_list: MusicList) -> PlayList:
         """ 把MusicList 转成 PlayList """
         play_list = PlayList()
         play_list.set_musics(music_list.musics)

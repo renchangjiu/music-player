@@ -38,10 +38,6 @@ def format_size(size: int) -> str:
     return size
 
 
-def search_local_music():
-    pass
-
-
 def get_elided_text(font: QFont, str_: str, max_width: int):
     fm = QFontMetrics(font)
     # 计算字符串宽度
@@ -61,12 +57,12 @@ def __sub(s, max_width, fm):
         return __sub(s[0:-1], max_width, fm)
 
 
-def convert_music_list(obj) -> MusicList:
+def convert2music_list(obj) -> MusicList:
     """ 把参数转换成MusicList, 以方便IDE提示(参数必须是MusicList类型)"""
     return obj
 
 
-def convert_music(obj) -> Music:
+def convert2music(obj) -> Music:
     """ 把参数转换成Music, 以方便IDE提示(参数必须是Music类型)"""
     return obj
 

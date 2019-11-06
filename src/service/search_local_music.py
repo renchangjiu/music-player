@@ -48,8 +48,6 @@ class SearchLocalMusic(QObject):
     # 把搜索结果存入数据库
     def __to_database(musics: list):
         music_service = MusicService()
-        # 先把原先的本地音乐删除
-        # music_service.delete_by_mid(0)
         music_service.batch_insert(musics)
 
     @staticmethod
@@ -107,7 +105,7 @@ class SearchLocalMusic(QObject):
 
                     duration = mp3.duration
                     music = Music()
-                    music.mid = MusicList.default_id
+                    music.mid = MusicList.DEFAULT_ID
                     music.path = path
                     music.title = title
                     music.artist = artist

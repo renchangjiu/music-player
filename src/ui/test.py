@@ -11,9 +11,6 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QAbstractItemView, 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-
-
-
 def main():
     app = QtWidgets.QApplication(sys.argv)
     # my_window = ChooseMusicDirPage()

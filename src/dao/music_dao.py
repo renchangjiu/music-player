@@ -31,8 +31,7 @@ class MusicDao:
         sql = "select * from t_music where id = ?"
         cursor = self.conn.cursor()
         cursor.execute(sql, (_id,))
-        ret = cursor.fetchall()
-        ret = ret[0]
+        ret = cursor.fetchall()[0]
         cursor.close()
         m = self.__row_2_music(ret)
         return m
